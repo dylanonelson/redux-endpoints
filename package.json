@@ -1,6 +1,6 @@
 {
   "version": "0.0.0",
-  "main": "index.js",
+  "main": "dist/index.bundle.js",
   "scripts": {
     "build": "webpack --colors --progress",
     "build:prd": "NODE_ENV=production npm run build",
@@ -14,7 +14,7 @@
   },
   "author": "Dylan Nelson",
   "license": "ISC",
-  "name": "option",
+  "name": "redux-endpoints",
   "devDependencies": {
     "babel-core": "^6.25.0",
     "babel-eslint": "^7.2.3",
