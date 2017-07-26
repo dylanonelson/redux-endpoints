@@ -1,9 +1,10 @@
 import {
   createEndpoint,
-  endpointReducer,
 } from '../../dist/index.bundle.js';
+
+import * as utils from '../../src/utils';
 
 export {
   createEndpoint,
-  endpointReducer,
+  utils,
 };

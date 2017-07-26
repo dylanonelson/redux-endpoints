@@ -1,8 +1,9 @@
 import { assert } from 'chai';
 
+import './actionCreatorsSpec';
 import './index.html';
+import './utilsSpec';
 import { createEndpoint } from './context.js';
-import { storeWithBasicGetModule } from './fixtures';
 
 describe('A Redux endpoint module', function() {
 
@@ -10,13 +11,7 @@ describe('A Redux endpoint module', function() {
 
   before(function() {
     ep = createEndpoint({
-      branch: id => id,
-      request: (url) => new Promise((resolve, reject) => {
-        fetch(url)
-          .then(resp => resp.json())
-          .then(json => resolve(json))
-          .catch(err => reject(err));
-      }),
+      name: 'mock-api',
       url: 'http://localhost:1105/resource/:id',
     });
   });
@@ -25,8 +20,8 @@ describe('A Redux endpoint module', function() {
     assert.isObject(ep);
   });
 
-  it('defines actions', function() {
-    assert.isObject(ep.actions);
+  it('defines actionCreators', function() {
+    assert.isObject(ep.actionCreators);
   });
 
   it('defines middleware', function() {

@@ -1,16 +1,25 @@
-import { combineReducers, createStore } from 'redux';
+import { applyMiddleware, combineReducers, createStore } from 'redux';
 
-import { createEndpoint, endpointReducer } from '../context';
+import { createEndpoint } from '../context';
 
 const endpoint = createEndpoint({
+  name: 'mock-api',
   url: '/api/:id',
 });
 
 const reducer = combineReducers({
-  api: endpointReducer,
+  api: endpoint.reducer,
 });
 
-const store = createStore(reducer, { api: {} });
+const middleware = applyMiddleware(
+  endpoint.middleware,
+);
+
+const initialState = {
+  api: {},
+};
+
+const store = createStore(reducer, initialState, middleware);
 
 export { endpoint };
 
