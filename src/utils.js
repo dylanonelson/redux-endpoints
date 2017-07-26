@@ -9,3 +9,8 @@ export const camelCase = spinal => (
 export const actionTypeCase = spinal => (
   spinal.replace('-', '_').toUpperCase()
 );
+
+export const initialEndpointState = () => ({
+  pendingRequests: 0,
+  data: null,
+});

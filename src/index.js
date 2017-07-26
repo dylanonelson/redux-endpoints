@@ -1,7 +1,7 @@
 import URL from 'url-parse';
 
 import './index.html';
-import { camelCase, actionTypeCase } from './utils';
+import { camelCase, actionTypeCase, initialEndpointState } from './utils';
 
 export const createEndpoint = ({ name, request, url, resolver }) => {
   const actionTypeCaseName = actionTypeCase(name);
@@ -68,6 +68,30 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
   }
 
   const reducer = (previous = {}, action) => {
+    let nextState = null;
+
+    if (action.type === requestActionType) {
+      nextState = Object.assign({}, previous);
+      const path = action.meta.path;
+      if (!nextState[path]) {
+        const init = initialEndpointState();
+        init.pendingRequests = 1;
+        nextState[path] = init
+      }
+    }
+
+    if (action.type === ingestActionType) {
+      nextState = Object.assign({}, previous);
+      const path = action.meta.path;
+      const nextPathState = Object.assign({}, nextState[path]);
+      nextState[path] = nextPathState;
+      nextPathState.data = action.payload;
+      nextPathState.pendingRequests--;
+    }
+
+    if (nextState !== null)
+      return nextState;
+
     return previous;
   };
 

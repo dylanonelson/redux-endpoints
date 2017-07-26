@@ -4,3 +4,4 @@ import './index.html';
 import './utilsSpec';
 import './endpointSpec';
 import './actionCreatorsSpec';
+import './reducerSpec';
