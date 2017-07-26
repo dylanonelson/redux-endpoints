@@ -32,7 +32,12 @@ describe('An endpoint request action creator', function() {
     });
 
     it('has a meta property containing the named parameters', function() {
-      assert.deepEqual(requestAction.meta, { id: 1776 });
+      assert.deepEqual(
+        requestAction.meta,
+        {
+          params: { id: 1776 },
+        },
+      );
     });
 
   });

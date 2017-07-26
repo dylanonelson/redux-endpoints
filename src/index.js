@@ -8,6 +8,7 @@ export const createEndpoint = ({ name, url }) => {
   const camelCaseName = camelCase(name);
 
   const parsedUrl = new URL(url);
+  // Thanks, Jeremy
   const namedParam = /(\(\?)?:\w+/g;
   const urlParams = [];
 
@@ -18,6 +19,8 @@ export const createEndpoint = ({ name, url }) => {
     if (match) urlParams.push(match[0]);
   }
 
+  const actionTypes = [];
+
   const actionCreators = {
     request: (...params) => {
       let reqUrl = url;
@@ -26,14 +29,20 @@ export const createEndpoint = ({ name, url }) => {
         reqUrl = reqUrl.replace(p, params[i]);
       });
 
-      const meta = urlParams.reduce((memo, p, i) => {
+      const metaParams = urlParams.reduce((memo, p, i) => {
         memo[p.replace(':', '')] = params[i];
         return memo;
       }, {});
 
+      const actionType = `${camelCaseName}/REQUEST_${actionTypeCaseName}_DATA`;
+
+      actionTypes.push(actionType);
+
       return {
-        type: `${camelCaseName}/REQUEST_${actionTypeCaseName}_DATA`,
-        meta,
+        type: actionType,
+        meta: {
+          params: metaParams,
+        },
         payload: {
           url: reqUrl,
         },
