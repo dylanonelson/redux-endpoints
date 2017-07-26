@@ -1,5 +1,5 @@
 .*.s[a-z]?
 .s[a-z]?
 builds/
-dist/
+dist
 node_modules/

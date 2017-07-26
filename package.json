@@ -8,6 +8,7 @@
     "watch": "npm run build -- --watch",
     "build:test": "npm run build -- --config=webpack.config.test.js",
     "watch:test": "npm run build:test -- --watch",
+    "start:tmux": "tmux split-window \"npm run watch:test\" && tmux split-window \"npm run watch\" && tmux select-layout main-vertical && npm run test:server",
     "test:server": "mocha ./test/dist/ -w",
     "test:browser": "open ./test/dist/index.html"
   },
@@ -31,6 +32,7 @@
     "jest": "^20.0.4",
     "mocha": "^3.4.2",
     "prop-types": "^15.5.10",
+    "redux": "^3.7.2",
     "style-loader": "^0.18.2",
     "webpack": "^3.4.0",
     "webpack-dev-server": "^2.6.1"

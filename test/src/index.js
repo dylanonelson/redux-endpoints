@@ -1,7 +1,8 @@
 import { assert } from 'chai';
 
 import './index.html';
-import { createEndpoint } from '../../dist/index.bundle.js';
+import { createEndpoint } from './context.js';
+import { storeWithBasicGetModule } from './fixtures';
 
 describe('A Redux endpoint module', function() {
 
