@@ -1,9 +1,11 @@
 import { assert } from 'chai';
 
-import './actionCreatorsSpec';
 import './index.html';
-import './utilsSpec';
 import { createEndpoint } from './context.js';
+
+// Test imports
+import './utilsSpec';
+import './actionCreatorsSpec';
 
 describe('A Redux endpoint module', function() {
 
