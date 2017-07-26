@@ -32,5 +32,23 @@ describe('utils', function() {
 
   });
 
+  context('#initialEndpointState', function() {
+
+    let state;
+
+    beforeEach(function() {
+      state = utils.initialEndpointState();
+    });
+
+    it('returns an object with the proper format', function() {
+      const expected = {
+        data: null,
+        pendingRequests: 0,
+      };
+      assert.deepEqual(state, expected);
+    });
+
+  });
+
 });
 
