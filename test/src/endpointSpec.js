@@ -28,5 +28,5 @@ describe('A Redux endpoint module', function() {
   it('defines a reducer', function() {
     assert.isFunction(ep.reducer);
   });
-});
 
+});
