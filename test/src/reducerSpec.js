@@ -1,5 +1,4 @@
 import { assert } from 'chai';
-import resourceJson from '../mock-api/json/resource.json';
 
 import { utils } from './context';
 import { endpoint } from 'fixtures/storeWithBasicGetModule';
@@ -24,8 +23,8 @@ describe('An endpoint reducer', function() {
   it('decrements the pendingRequests counter for the ingest action', function() {
     const previous = {
       '1776': {
-        pendingRequests: 1,
         data: null,
+        pendingRequests: 1,
       },
     };
 
@@ -36,8 +35,8 @@ describe('An endpoint reducer', function() {
   it('updates the data at the correct path for the ingest action', function() {
     const previous = {
       '1776': {
-        pendingRequests: 1,
         data: null,
+        pendingRequests: 1,
       },
     };
 
