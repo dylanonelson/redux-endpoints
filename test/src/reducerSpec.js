@@ -22,12 +22,6 @@ describe('An endpoint reducer', function() {
   });
 
   it('decrements the pendingRequests counter for the ingest action', function() {
-    const expected = {
-      '1776': {
-        pendingRequests: 0,
-        data: 'test',
-      },
-    };
     const previous = {
       '1776': {
         pendingRequests: 1,
@@ -36,7 +30,19 @@ describe('An endpoint reducer', function() {
     };
 
     const result = reducer(previous, ingestAction);
-    assert.deepEqual(result, expected);
+    assert.deepEqual(result['1776'].pendingRequests, 0);
+  });
+
+  it('updates the data at the correct path for the ingest action', function() {
+    const previous = {
+      '1776': {
+        pendingRequests: 1,
+        data: null,
+      },
+    };
+
+    const result = reducer(previous, ingestAction);
+    assert.deepEqual(result['1776'].data, 'test');
   });
 
 });
