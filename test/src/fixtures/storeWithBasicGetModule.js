@@ -4,7 +4,7 @@ import { createEndpoint } from '../context';
 
 const endpoint = createEndpoint({
   name: 'mock-api',
-  url: '/api/:id',
+  url: 'http://localhost:1111/api/:id',
 });
 
 const reducer = combineReducers({

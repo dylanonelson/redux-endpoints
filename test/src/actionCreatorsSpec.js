@@ -25,6 +25,16 @@ describe('An endpoint request action creator', function() {
       assert.strictEqual(requestAction.type, 'mockApi/REQUEST_MOCK_API_DATA');
     });
 
+    it('has a payload containing the url', function() {
+      assert.deepEqual(requestAction.payload, {
+        url: 'http://localhost:1111/api/1776',
+      })
+    });
+
+    it('has a meta property containing the named parameters', function() {
+      assert.deepEqual(requestAction.meta, { id: 1776 });
+    });
+
   });
 
 });
