@@ -95,9 +95,27 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
     return previous;
   };
 
+  const selectorMap = {};
+
+  const selectors = (...params) => {
+    const path = resolver(...params);
+
+    let s;
+
+    if (!selectorMap[path]) {
+      s = state => (state[path] && state[path].data) || null;
+      selectorMap[path] = s;
+    } else {
+      s = selectorMap[path];
+    }
+
+    return s;
+  };
+
   return {
     actionCreators,
     middleware,
     reducer,
+    selectors,
   };
 };

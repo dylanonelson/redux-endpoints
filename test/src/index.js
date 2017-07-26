@@ -5,3 +5,4 @@ import './utilsSpec';
 import './endpointSpec';
 import './actionCreatorsSpec';
 import './reducerSpec';
+import './selectorSpec';
