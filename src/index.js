@@ -3,7 +3,7 @@ import URL from 'url-parse';
 import './index.html';
 import { camelCase, actionTypeCase } from './utils';
 
-export const createEndpoint = ({ name, url }) => {
+export const createEndpoint = ({ name, request, url, resolver }) => {
   const actionTypeCaseName = actionTypeCase(name);
   const camelCaseName = camelCase(name);
 
@@ -19,9 +19,20 @@ export const createEndpoint = ({ name, url }) => {
     if (match) urlParams.push(match[0]);
   }
 
-  const actionTypes = [];
+  const ingestActionType =
+    `${camelCaseName}/INGEST_${actionTypeCaseName}_DATA`;
+
+  const requestActionType =
+    `${camelCaseName}/REQUEST_${actionTypeCaseName}_DATA`;
 
   const actionCreators = {
+    ingest: (payload, meta) => {
+      return {
+        meta,
+        payload,
+        type: ingestActionType,
+      };
+    },
     request: (...params) => {
       let reqUrl = url;
 
@@ -34,23 +45,27 @@ export const createEndpoint = ({ name, url }) => {
         return memo;
       }, {});
 
-      const actionType = `${camelCaseName}/REQUEST_${actionTypeCaseName}_DATA`;
-
-      actionTypes.push(actionType);
-
       return {
-        type: actionType,
         meta: {
           params: metaParams,
+          path: resolver(...params),
         },
         payload: {
           url: reqUrl,
         },
+        type: requestActionType,
       };
     },
   };
 
-  const middleware = store => next => action => next(action);
+  const middleware = store => next => action => {
+    if (action.type === requestActionType) {
+      request(action.payload.url).then(data =>
+        store.dispatch(actionCreators.ingest(data, action.meta))
+      );
+    }
+    return next(action);
+  }
 
   const reducer = (previous = {}, action) => {
     return previous;
