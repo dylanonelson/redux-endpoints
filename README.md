@@ -1,6 +1,8 @@
 # redux-endpoints
 > Define Redux modules for fetching data from API endpoints
 
+![Build status](https://travis-ci.org/dylanonelson/redux-endpoints.svg?branch=master)
+
 ## Motivation
 I found myself writing a lot of boilerplate code every time I wanted to fetch data and ingest it into my Redux store. First, I would define some actions for requesting and ingesting the data. Then I would define a reducer to process those actions. Then I would define some middleware or a saga to intercept the "request" action and fire off the "ingest" one once the API call was complete. Establishing all the cross references and integrating the module into my Redux setup was tedious and error prone. More importantly, I quickly realized that for simple cases I was doing the exact same thing every time, with minor variations caused only by slips of memory or spells of laziness. I made redux-endpoints as a way to truly standardize this type of module definition.
 
