@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+- '7'
+deploy:
+  api_key:
+    secure: AJ3p7de6/uE/mHTPmUr/ZRarr//8x474OeYzYlSb+JFYmEOMlo4Pef/8/Rxsjutkftz3mljH6Sp9MgVl3FVNmYwNauPBD2z7OKQiEYHNUQv2MMgUvoEhdeiFSKPdW2Yx5XbZqm7/ZfdYgbR+BMsEGgbzGBQUdGkjqQxNKiotQGMsYEUXUqmZGuo1M04WYw0PEqxVQ/bBBbKiO8WG5Ke1EF2fpNsL54SiNGmgCzKoNLspYT1nYx0Fx2VzDNR0ioCBoDNSmQpEJhTm0EldVmSjwHxB4AGEP2SOl77554vn5gv5/niCiACURd5KcfVU/wrrY2eLTl9rJ1MgSqvqRo6Kihh/5uUBzcMqZxwUzYzrj8tprRHfa44pN0d+J+Of7jEEQwD760kT6nVpqG8Ks3IOvTAm+hOSaNzmF53YeaTjT3A6mxCMNMhXSeCUFCveO9Bkn5nbDaM2fjOgrAPm4ELiWm2A3bcmSd5XM6fAyHhdRzQqN0TmUIIpl0VVrHP6UO8bipm9/hDtVqMrYnkCkxQfchz3+b4KD/8xRPCRi8LVpBzuldKNCtZyob0UgPZp/vCbGga9MUWSbN/z5MOy0gf/EnlTIpKdf19xZHZ7qFqlzFS38fsEXMy+vmgU1K7+EYO+muVyNlwDpton7ZB01afjoCNVZV3bNd5PiM6Osp47a58=
+  email: dylanonelson@gmail.com
+  on:
+    branch: master
+    tags: true
+    skip_cleanup: true
+  provider: npm
+sudo: required
