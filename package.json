@@ -6,7 +6,6 @@
     "build:prd": "NODE_ENV=production npm run build",
     "build:test": "npm run build -- --config=webpack.config.test.js",
     "dev": "webpack-dev-server",
-    "prepublishOnly": "npm run build:prd",
     "start:tmux": "tmux split-window \"npm run watch:test\" && tmux split-window \"npm run watch\" && tmux select-layout main-vertical && npm run test:server",
     "test": "mocha ./test/dist/",
     "pretest": "npm run build:prd && npm run build:test",
