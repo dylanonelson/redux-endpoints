@@ -42,14 +42,14 @@ export default reducer;
 // src/redux-store/index.js
 import { applyMiddleware, createStore } from 'redux';
 
-import apiResourceReducer, { middleware as resourceApiMiddleware } from 'redux-modules/resourceApi';
+import endpointReducer, { middleware } from 'redux-modules/resourceApi';
 
 const middleware = applyMiddleware(
-  resourceApiMiddleware,
+  middleware,
 );
 
 const reducer = combineReducers({
-  resourceApi: apiResourceReducer,
+  resourceApi: endpointReducer,
 });
 
 const store = createStore(reducer, {}, middleware);
