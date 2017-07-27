@@ -8,6 +8,7 @@
     "dev": "webpack-dev-server",
     "prepublishOnly": "npm run build:prd",
     "start:tmux": "tmux split-window \"npm run watch:test\" && tmux split-window \"npm run watch\" && tmux select-layout main-vertical && npm run test:server",
+    "test": "mocha ./test/dist/",
     "test:server": "mocha ./test/dist/ -w",
     "test:browser": "open ./test/dist/index.html",
     "watch": "npm run build -- --watch",
