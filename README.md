@@ -10,13 +10,18 @@ I found myself writing a lot of boilerplate code every time I wanted to fetch da
 import { createEndpoint } from 'redux-endpoints';
 
 const ep = createEndpoint({
-  name: 'resourceApi',
-  request: (url) => new Promise((resolve, reject) => (
+  // Must be spinal case
+  name: 'resource-api',
+  // Receives the url as a parameter and must return a promise
+  request: url => new Promise((resolve, reject) => (
     fetch(url, { credentials: 'include' })
       .then(resp => resp.json())
       .then(json => resolve(json))
   )),
+  // Receives the url params as arguments and returns the key in the state
+  // where the request data will be stored
   resolver: id => id,
+  // Url pattern for requests
   url: '/api/resource/:id',
 });
 
