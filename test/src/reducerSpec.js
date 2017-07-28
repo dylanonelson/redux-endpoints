@@ -29,7 +29,19 @@ describe('An endpoint reducer', function() {
     };
 
     const result = reducer(previous, ingestAction);
-    assert.deepEqual(result['1776'].pendingRequests, 0);
+    assert.strictEqual(result['1776'].pendingRequests, 0);
+  });
+
+  it('increments the pendingRequests counter for the request action', function() {
+    const previous = {
+      '1776': {
+        data: null,
+        pendingRequests: 1,
+      },
+    };
+
+    const result = reducer(previous, requestAction);
+    assert.strictEqual(result['1776'].pendingRequests, 2);
   });
 
   it('updates the data at the correct path for the ingest action', function() {

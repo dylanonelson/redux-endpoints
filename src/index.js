@@ -77,6 +77,9 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
         const init = initialEndpointState();
         init.pendingRequests = 1;
         nextState[path] = init
+      } else {
+        nextState[path] = Object.assign({}, nextState[path]);
+        nextState[path].pendingRequests += 1;
       }
     }
 
