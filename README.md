@@ -72,9 +72,9 @@ store.dispatch(actionCreators.request(1));
 ```
 
 The code above triggers:
-1. An action, `resourceApi/REQUEST_RESOURCE_API_DATA`,
+1. An action, `resourceApi/MAKE_RESOURCE_API_REQUEST`,
 1. A fetch to the url `/api/resource/1`, and
-1. An action, `resourceApi/INGEST_RESOURCE_API_DATA`.
+1. An action, `resourceApi/INGEST_RESOURCE_API_RESPONSE`.
 
 At the end of the whole thing, the `resourceApi` branch of your state will look as follows:
 ```json

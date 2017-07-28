@@ -20,10 +20,10 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
   }
 
   const ingestActionType =
-    `${camelCaseName}/INGEST_${actionTypeCaseName}_DATA`;
+    `${camelCaseName}/INGEST_${actionTypeCaseName}_RESPONSE`;
 
   const requestActionType =
-    `${camelCaseName}/REQUEST_${actionTypeCaseName}_DATA`;
+    `${camelCaseName}/MAKE_${actionTypeCaseName}_REQUEST`;
 
   const actionCreators = {
     ingest: (payload, meta) => {
