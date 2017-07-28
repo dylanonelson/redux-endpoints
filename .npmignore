@@ -1,0 +1,5 @@
+src/
+bin/
+node_modules/
+test/
+webpack
