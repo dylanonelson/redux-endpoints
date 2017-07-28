@@ -9,7 +9,7 @@ describe('An endpoint request action creator', function() {
 
   beforeEach(function() {
     requestActionCreator = endpoint.actionCreators.request;
-    requestAction = endpoint.actionCreators.request(1776);
+    requestAction = endpoint.actionCreators.request(1776, { foo: 'bar' });
   });
 
   it('is a function', function() {
@@ -27,9 +27,16 @@ describe('An endpoint request action creator', function() {
     });
 
     it('has a payload containing the url', function() {
-      assert.deepEqual(requestAction.payload, {
-        url: 'http://localhost:1111/api/1776',
-      })
+      assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
+    });
+
+    it('has a payload containing the options passed as the last parameter', function() {
+      assert.deepEqual(requestAction.payload.options, { foo: 'bar' });
+    });
+
+    it('defaults the options key of the payload to an empty object', function() {
+      requestAction = endpoint.actionCreators.request(1776);
+      assert.deepEqual(requestAction.payload.options, {});
     });
 
     it('has a meta property containing the named parameters', function() {

@@ -34,11 +34,15 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
       };
     },
     request: (...params) => {
-      let reqUrl = url;
+      let options = {}, reqUrl = url;
 
       urlParams.forEach((p, i) => {
         reqUrl = reqUrl.replace(p, params[i]);
       });
+
+      if (typeof params[params.length - 1] === 'object') {
+        options = params[params.length - 1];
+      }
 
       const metaParams = urlParams.reduce((memo, p, i) => {
         memo[p.replace(':', '')] = params[i];
@@ -51,6 +55,7 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
           path: resolver(...params),
         },
         payload: {
+          options,
           url: reqUrl,
         },
         type: requestActionType,
@@ -60,7 +65,7 @@ export const createEndpoint = ({ name, request, url, resolver }) => {
 
   const middleware = store => next => action => {
     if (action.type === requestActionType) {
-      request(action.payload.url).then(data =>
+      request(action.payload.url, action.payload.options).then(data =>
         store.dispatch(actionCreators.ingest(data, action.meta))
       );
     }
