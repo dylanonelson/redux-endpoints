@@ -23,7 +23,7 @@ describe('An endpoint request action creator', function() {
     });
 
     it('has a type derived from its name property', function() {
-      assert.strictEqual(requestAction.type, 'mockApi/REQUEST_MOCK_API_DATA');
+      assert.strictEqual(requestAction.type, 'mockApi/MAKE_MOCK_API_REQUEST');
     });
 
     it('has a payload containing the url', function() {
@@ -72,7 +72,7 @@ describe('An endpoint ingest action creator', function() {
     });
 
     it('has a type derived from its name property', function() {
-      assert.strictEqual(ingestAction.type, 'mockApi/INGEST_MOCK_API_DATA');
+      assert.strictEqual(ingestAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
     });
 
     it('returns the data passed to it as its payload', function() {
