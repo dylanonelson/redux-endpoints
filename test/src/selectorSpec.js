@@ -1,13 +1,14 @@
 import { assert } from 'chai';
 
-import { endpoint } from 'fixtures/storeWithBasicGetModule';
+import { basicEndpoint } from 'fixtures';
 
 describe('An endpoint selector', function() {
 
   let selectors, state;
 
   beforeEach(function() {
-    selectors = endpoint.selectors;
+    selectors = basicEndpoint.selectors;
+
     state = {
       '1776': {
         data: 'test',

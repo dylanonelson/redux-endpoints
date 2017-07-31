@@ -1,16 +1,16 @@
 import { assert } from 'chai';
 
 import { utils } from './context';
-import { endpoint } from 'fixtures/storeWithBasicGetModule';
+import { basicEndpoint } from 'fixtures';
 
 describe('An endpoint reducer', function() {
 
   let ingestAction, reducer, requestAction;
 
   beforeEach(function() {
-    reducer = endpoint.reducer;
-    requestAction = endpoint.actionCreators.request(1776);
-    ingestAction = endpoint.actionCreators.ingest('test', requestAction.meta);
+    reducer = basicEndpoint.reducer;
+    requestAction = basicEndpoint.actionCreators.request(1776);
+    ingestAction = basicEndpoint.actionCreators.ingest('test', requestAction.meta);
   });
 
   it('initializes an empty request object for the request action', function() {

@@ -1,5 +1,5 @@
-import storeWithBasicGetModule from './storeWithBasicGetModule';
+import basicEndpoint from './basicEndpoint';
 
 export {
-  storeWithBasicGetModule,
+  basicEndpoint,
 };

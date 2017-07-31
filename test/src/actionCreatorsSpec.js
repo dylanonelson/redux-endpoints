@@ -1,15 +1,15 @@
 import { assert } from 'chai';
 import resourceJson from '../mock-api/json/resource.json';
 
-import { endpoint } from 'fixtures/storeWithBasicGetModule';
+import { basicEndpoint } from 'fixtures';
 
 describe('An endpoint request action creator', function() {
 
   let requestActionCreator, requestAction;
 
   beforeEach(function() {
-    requestActionCreator = endpoint.actionCreators.request;
-    requestAction = endpoint.actionCreators.request(1776, { foo: 'bar' });
+    requestActionCreator = basicEndpoint.actionCreators.request;
+    requestAction = basicEndpoint.actionCreators.request(1776, { foo: 'bar' });
   });
 
   it('is a function', function() {
@@ -35,7 +35,7 @@ describe('An endpoint request action creator', function() {
     });
 
     it('defaults the options key of the payload to an empty object', function() {
-      requestAction = endpoint.actionCreators.request(1776);
+      requestAction = basicEndpoint.actionCreators.request(1776);
       assert.deepEqual(requestAction.payload.options, {});
     });
 
@@ -56,7 +56,7 @@ describe('An endpoint ingest action creator', function() {
   let ingestActionCreator, ingestPayload, ingestAction, requestMeta;
 
   beforeEach(function() {
-    ingestActionCreator = endpoint.actionCreators.ingest;
+    ingestActionCreator = basicEndpoint.actionCreators.ingest;
     ingestPayload = resourceJson;
     requestMeta = {
       params: { id: 1776 },
