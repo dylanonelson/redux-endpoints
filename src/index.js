@@ -1,9 +1,16 @@
 import URL from 'url-parse';
 
-import './index.html';
+import { DEFAULT_KEY } from './constants';
 import { camelCase, actionTypeCase, initialEndpointState } from './utils';
 
-export const createEndpoint = ({ name, request, url, resolver }) => {
+const defaultResolver = () => DEFAULT_KEY;
+
+export const createEndpoint = ({
+  name,
+  request,
+  url,
+  resolver = defaultResolver,
+}) => {
   const actionTypeCaseName = actionTypeCase(name);
   const camelCaseName = camelCase(name);
 

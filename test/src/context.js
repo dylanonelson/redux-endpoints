@@ -4,7 +4,10 @@ import {
 
 import * as utils from '../../src/utils';
 
+import * as constants from '../../src/constants';
+
 export {
+  constants,
   createEndpoint,
   utils,
 };
