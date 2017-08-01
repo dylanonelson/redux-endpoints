@@ -31,7 +31,7 @@ const {
   actionCreators,
   actionTypes,
   middleware,
-  selectors,
+  selector,
   reducer,
 } = ep;
 
@@ -39,7 +39,7 @@ export {
   actionCreators,
   actionTypes,
   middleware,
-  selectors,
+  selector,
 };
 
 export default reducer;

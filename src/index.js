@@ -112,7 +112,7 @@ export const createEndpoint = ({
 
   const selectorMap = {};
 
-  const selectors = path => {
+  const selector = (path = DEFAULT_KEY) => {
     let s;
 
     if (!selectorMap[path]) {
@@ -129,6 +129,6 @@ export const createEndpoint = ({
     actionCreators,
     middleware,
     reducer,
-    selectors,
+    selector,
   };
 };
