@@ -112,9 +112,7 @@ export const createEndpoint = ({
 
   const selectorMap = {};
 
-  const selectors = (...params) => {
-    const path = resolver(...params);
-
+  const selectors = path => {
     let s;
 
     if (!selectorMap[path]) {
