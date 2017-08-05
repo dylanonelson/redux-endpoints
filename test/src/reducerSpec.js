@@ -69,8 +69,8 @@ describe('An endpoint reducer', function() {
         '1776': {
           data: null,
           error: {
-            name: 'Error',
             message: 'There was a problem with the request',
+            name: 'Error',
           },
           pendingRequests: 1,
         },
