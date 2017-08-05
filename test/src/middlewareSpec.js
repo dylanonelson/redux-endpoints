@@ -1,6 +1,5 @@
 import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
-import mockFetch from 'fetch-mock';
 
 import { basicEndpoint } from 'fixtures';
 
