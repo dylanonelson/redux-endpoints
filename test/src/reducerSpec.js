@@ -85,8 +85,8 @@ describe('An endpoint reducer', function() {
       const result = reducer(previous, errorAction);
       assert.strictEqual(result['1776'].data, data);
       assert.deepEqual(result['1776'].error, {
-        name: 'Error',
         message: errorMsg,
+        name: 'Error',
       });
     });
 
