@@ -35,6 +35,7 @@ export const createEndpoint = ({
   const actionCreators = {
     ingest: (payload, meta) => {
       return {
+        error: (payload instanceof Error) ? true : false,
         meta,
         payload,
         type: ingestActionType,
@@ -72,9 +73,13 @@ export const createEndpoint = ({
 
   const middleware = store => next => action => {
     if (action.type === requestActionType) {
-      request(action.payload.url, action.payload.options).then(data =>
-        store.dispatch(actionCreators.ingest(data, action.meta))
-      );
+      request(action.payload.url, action.payload.options)
+        .then(data =>
+          store.dispatch(actionCreators.ingest(data, action.meta))
+        )
+        .catch(error =>
+          store.dispatch(actionCreators.ingest(error, action.meta))
+        );
     }
     return next(action);
   }

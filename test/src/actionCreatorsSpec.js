@@ -75,14 +75,34 @@ describe('An endpoint ingest action creator', function() {
       assert.strictEqual(ingestAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
     });
 
-    it('returns the data passed to it as its payload', function() {
-      assert.deepEqual(ingestAction.payload, ingestPayload);
-    });
+  });
 
-    it('returns the second argument as its meta property', function() {
-      assert.deepEqual(ingestAction.meta, requestMeta);
-    });
+  it('returns the data passed to it as its payload', function() {
+    assert.deepEqual(ingestAction.payload, ingestPayload);
+  });
 
+  it('returns the second argument as its meta property', function() {
+    assert.deepEqual(ingestAction.meta, requestMeta);
+  });
+
+  it('sets the payload to the error if the payload is an error', function() {
+    const error = new Error('Something went wrong with the request');
+    const action = ingestActionCreator(error, requestMeta);
+
+    assert.strictEqual(action.payload, error);
+  });
+
+  it('sets the error property to true if the payload is an error', function() {
+    const action = ingestActionCreator(
+      new Error('Something went wrong with the request'),
+      requestMeta
+    );
+
+    assert.strictEqual(action.error, true);
+  });
+
+  it('sets the error property to false if the payload is not an error', function() {
+    assert.strictEqual(ingestAction.error, false);
   });
 
 });
