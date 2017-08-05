@@ -88,3 +88,17 @@ At the end of the whole thing, the `resourceApi` branch of your state will look 
   }
 }
 ```
+
+If something went wrong with your request and the Promise were rejected, the `resourceApi` branch of your state would look as follows:
+```json
+{
+  "1": {
+    "pendingRequests": 0,
+    "data": null,
+    "error": {
+      "message": "Something went wrong with the request",
+      "name": "Error"
+    }
+  }
+}
+```

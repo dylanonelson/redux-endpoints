@@ -64,7 +64,7 @@ describe('An endpoint reducer', function() {
       assert.deepEqual(result['1776'].data, 'test');
     });
 
-    it('leaves the data node untouched and sets the payload as an error if there was one', function() {
+    it('leaves the data node untouched and parses the payload as an error if there was one', function() {
       const data = {
         foo: 'bar',
       };
@@ -76,15 +76,19 @@ describe('An endpoint reducer', function() {
         },
       };
 
+      const errorMsg = 'There was a problem with the request';
+
       const errorAction = endpoint.actionCreators.ingest(
-        new Error('There was a problem with the request'),
+        new Error(errorMsg),
         requestAction.meta,
       );
       const result = reducer(previous, errorAction);
       assert.strictEqual(result['1776'].data, data);
-      assert.strictEqual(result['1776'].error, errorAction.payload);
+      assert.deepEqual(result['1776'].error, {
+        name: 'Error',
+        message: errorMsg,
+      });
     });
-
 
   });
 
