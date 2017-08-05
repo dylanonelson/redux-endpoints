@@ -7,8 +7,9 @@
   },
   "keywords": [
     "actions",
-    "redux",
-    "fsa"
+    "fsa",
+    "redux modules",
+    "redux"
   ],
   "scripts": {
     "build": "webpack --colors --progress",
