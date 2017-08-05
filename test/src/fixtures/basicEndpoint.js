@@ -7,6 +7,7 @@ const basicEndpoint = createEndpoint({
       fetch(url)
         .then(resp => resp.json())
         .then(json => resolve(json))
+        .catch(error => reject(error));
     })
   ),
   resolver: id => id,
