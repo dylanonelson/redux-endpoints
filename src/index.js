@@ -105,7 +105,12 @@ export const createEndpoint = ({
       const path = action.meta.path;
       const nextPathState = Object.assign({}, nextState[path]);
       nextState[path] = nextPathState;
-      nextPathState.data = action.payload;
+
+      if (action.error) {
+        nextPathState.error = action.payload;
+      } else {
+        nextPathState.data = action.payload;
+      }
       nextPathState.pendingRequests--;
     }
 
