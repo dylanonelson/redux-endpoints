@@ -5,6 +5,11 @@
     "type": "git",
     "url": "https://github.com/dylanonelson/redux-endpoints"
   },
+  "keywords": [
+    "actions",
+    "redux",
+    "fsa"
+  ],
   "scripts": {
     "build": "webpack --colors --progress",
     "build:prd": "NODE_ENV=production npm run build",
