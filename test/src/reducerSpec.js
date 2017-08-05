@@ -64,6 +64,23 @@ describe('An endpoint reducer', function() {
       assert.deepEqual(result['1776'].data, 'test');
     });
 
+    it('sets the error key to null if the request was successful', function() {
+      const previous = {
+        '1776': {
+          data: null,
+          error: {
+            name: 'Error',
+            message: 'There was a problem with the request',
+          },
+          pendingRequests: 1,
+        },
+      };
+
+      const result = reducer(previous, ingestAction);
+      assert.deepEqual(result['1776'].data, 'test');
+      assert.strictEqual(result['1776'].error, null);
+    });
+
     it('leaves the data node untouched and parses the payload as an error if there was one', function() {
       const data = {
         foo: 'bar',

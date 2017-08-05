@@ -111,6 +111,7 @@ export const createEndpoint = ({
         nextPathState.error = { message, name }
       } else {
         nextPathState.data = action.payload;
+        nextPathState.error = null;
       }
       nextPathState.pendingRequests--;
     }
