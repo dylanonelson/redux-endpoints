@@ -16,6 +16,11 @@ describe('An endpoint request action creator', function() {
     assert.isFunction(requestActionCreator);
   });
 
+  it('has a `toString` method which returns the correct action type', function() {
+    const expected = 'mockApi/MAKE_MOCK_API_REQUEST';
+    assert.strictEqual(requestActionCreator.toString(), expected);
+  });
+
   context('returns an action object that', function() {
 
     it('is a plain object', function() {
@@ -63,6 +68,11 @@ describe('An endpoint ingest action creator', function() {
       path: 1776,
     };
     ingestAction = ingestActionCreator(ingestPayload, requestMeta);
+  });
+
+  it('has a `toString` method which returns the correct action type', function() {
+    const expected = 'mockApi/INGEST_MOCK_API_RESPONSE';
+    assert.strictEqual(ingestActionCreator.toString(), expected);
   });
 
   context('returns an object that', function() {

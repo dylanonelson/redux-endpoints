@@ -32,43 +32,51 @@ export const createEndpoint = ({
   const requestActionType =
     `${camelCaseName}/MAKE_${actionTypeCaseName}_REQUEST`;
 
+  const ingestActionCreator = (payload, meta) => {
+    return {
+      error: (payload instanceof Error) ? true : false,
+      meta,
+      payload,
+      type: ingestActionType,
+    };
+  };
+
+  ingestActionCreator.toString = () => ingestActionType;
+
+  const requestActionCreator = (...params) => {
+    let options = {}, reqUrl = url;
+
+    urlParams.forEach((p, i) => {
+      reqUrl = reqUrl.replace(p, params[i]);
+    });
+
+    if (typeof params[params.length - 1] === 'object') {
+      options = params[params.length - 1];
+    }
+
+    const metaParams = urlParams.reduce((memo, p, i) => {
+      memo[p.replace(':', '')] = params[i];
+      return memo;
+    }, {});
+
+    return {
+      meta: {
+        params: metaParams,
+        path: resolver(...params),
+      },
+      payload: {
+        options,
+        url: reqUrl,
+      },
+      type: requestActionType,
+    };
+  };
+
+  requestActionCreator.toString = () => requestActionType;
+
   const actionCreators = {
-    ingest: (payload, meta) => {
-      return {
-        error: (payload instanceof Error) ? true : false,
-        meta,
-        payload,
-        type: ingestActionType,
-      };
-    },
-    request: (...params) => {
-      let options = {}, reqUrl = url;
-
-      urlParams.forEach((p, i) => {
-        reqUrl = reqUrl.replace(p, params[i]);
-      });
-
-      if (typeof params[params.length - 1] === 'object') {
-        options = params[params.length - 1];
-      }
-
-      const metaParams = urlParams.reduce((memo, p, i) => {
-        memo[p.replace(':', '')] = params[i];
-        return memo;
-      }, {});
-
-      return {
-        meta: {
-          params: metaParams,
-          path: resolver(...params),
-        },
-        payload: {
-          options,
-          url: reqUrl,
-        },
-        type: requestActionType,
-      };
-    },
+    ingest: ingestActionCreator,
+    request: requestActionCreator,
   };
 
   const middleware = store => next => action => {
