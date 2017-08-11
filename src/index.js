@@ -85,9 +85,17 @@ export const createEndpoint = ({
         .then(data =>
           store.dispatch(actionCreators.ingest(data, action.meta))
         )
-        .catch(error =>
-          store.dispatch(actionCreators.ingest(error, action.meta))
-        );
+        .catch(error => {
+          let payload;
+
+          if (error instanceof Error) {
+            payload = error;
+          } else {
+            payload = new Error(error);
+          }
+
+          store.dispatch(actionCreators.ingest(payload, action.meta))
+        });
     }
     return next(action);
   }
