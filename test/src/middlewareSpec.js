@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
 
 import { basicEndpoint } from 'fixtures';
+import { createEndpoint } from './context';
 
 describe('Endpoint middleware', function() {
 
@@ -34,6 +35,52 @@ describe('Endpoint middleware', function() {
       const ingestAction = actions[1];
       assert.deepEqual(ingestAction.meta, requestAction.meta);
       done();
+    });
+  });
+
+  it('catches promises rejected with an error and creates an error ingest action', function() {
+    const getErrorEndpoint = () => createEndpoint({
+      name: 'test-api',
+      request: () => new Promise((resolve, reject) => {
+        reject(new Error('test'));
+      }),
+      url: 'http://localhost:1111/api/:id',
+    });
+
+    const ep = getErrorEndpoint();
+    const getStore = configMockStore([ep.middleware]);
+    const store = getStore({});
+    requestAction = ep.actionCreators.request();
+    store.dispatch(requestAction);
+
+    setImmediate(() => {
+      const actions = store.getActions();
+      const ingestAction = actions[1];
+      assert(ingestAction.error);
+      assert.strictEqual(ingestAction.payload.message, 'test');
+    });
+  });
+
+  it('catches promises rejected with non-Error values and creates an error ingest action', function() {
+    const getErrorEndpoint = () => createEndpoint({
+      name: 'test-api',
+      request: () => new Promise((resolve, reject) => {
+        reject('test');
+      }),
+      url: 'http://localhost:1111/api/:id',
+    });
+
+    const ep = getErrorEndpoint();
+    const getStore = configMockStore([ep.middleware]);
+    const store = getStore({});
+    requestAction = ep.actionCreators.request();
+    store.dispatch(requestAction);
+
+    setImmediate(() => {
+      const actions = store.getActions();
+      const ingestAction = actions[1];
+      assert(ingestAction.error);
+      assert.strictEqual(ingestAction.payload.message, 'test');
     });
   });
 
