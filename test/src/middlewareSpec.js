@@ -38,7 +38,7 @@ describe('Endpoint middleware', function() {
     });
   });
 
-  it('catches promises rejected with an error and creates an error ingest action', function() {
+  it('catches promises rejected with an error and creates an error ingest action', function(done) {
     const getErrorEndpoint = () => createEndpoint({
       name: 'test-api',
       request: () => new Promise((resolve, reject) => {
@@ -49,7 +49,7 @@ describe('Endpoint middleware', function() {
 
     const ep = getErrorEndpoint();
     const getStore = configMockStore([ep.middleware]);
-    const store = getStore({});
+    store = getStore({});
     requestAction = ep.actionCreators.request();
     store.dispatch(requestAction);
 
@@ -58,10 +58,11 @@ describe('Endpoint middleware', function() {
       const ingestAction = actions[1];
       assert(ingestAction.error);
       assert.strictEqual(ingestAction.payload.message, 'test');
+      done();
     });
   });
 
-  it('catches promises rejected with non-Error values and creates an error ingest action', function() {
+  it('catches promises rejected with non-Error values and creates an error ingest action', function(done) {
     const getErrorEndpoint = () => createEndpoint({
       name: 'test-api',
       request: () => new Promise((resolve, reject) => {
@@ -72,7 +73,7 @@ describe('Endpoint middleware', function() {
 
     const ep = getErrorEndpoint();
     const getStore = configMockStore([ep.middleware]);
-    const store = getStore({});
+    store = getStore({});
     requestAction = ep.actionCreators.request();
     store.dispatch(requestAction);
 
@@ -81,6 +82,7 @@ describe('Endpoint middleware', function() {
       const ingestAction = actions[1];
       assert(ingestAction.error);
       assert.strictEqual(ingestAction.payload.message, 'test');
+      done();
     });
   });
 
