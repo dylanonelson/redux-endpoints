@@ -1,7 +1,21 @@
 import { assert } from 'chai';
 
 import { basicEndpoint } from 'fixtures';
-import { constants } from './context';
+import { createEndpoint } from './context';
+
+const getComplexResolverEndpoint = () => createEndpoint({
+  name: 'resource-api',
+  request: url => (
+    new Promise((resolve, reject) => {
+      fetch(url)
+        .then(resp => resp.json())
+        .then(json => resolve(json))
+        .catch(error => reject(error));
+    })
+  ),
+  resolver: (resourceType, id) => `${resourceType}__${id}`,
+  url: 'http://localhost:1111/api/:resource-type/:id',
+});
 
 describe('An endpoint selector', function() {
 
@@ -18,22 +32,31 @@ describe('An endpoint selector', function() {
     };
   });
 
-  it('returns the data at the resolved path when passed', function() {
-    const expected = 'test';
-    assert.strictEqual(selector(1776)(state), expected);
+  it('returns the data at the resolved path', function() {
+    const expected = {
+      data: 'test',
+      pendingRequests: 0,
+    };
+
+    assert.deepEqual(selector(1776)(state), expected);
   });
 
-  it('returns data at the default path when no argument is passed', function() {
-    const expected = 'test';
+  it('returns data at the resolved path for a complex resolver', function() {
+    selector = getComplexResolverEndpoint().selector;
+
+    const expected = {
+      data: 'test',
+      pendingRequests: 0,
+    };
 
     state = {
-      [constants.DEFAULT_KEY]: {
+      ['books__1']: {
         data: 'test',
         pendingRequests: 0,
       },
     };
 
-    assert.strictEqual(selector()(state), expected);
+    assert.deepEqual(selector('books', 1)(state), expected);
   });
 
   it('returns a function, even when called multiple times', function() {

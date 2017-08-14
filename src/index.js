@@ -141,11 +141,12 @@ export const createEndpoint = ({
 
   const selectorMap = {};
 
-  const selector = (path = DEFAULT_KEY) => {
+  const selector = (...params) => {
+    const path = resolver(...params);
     let s;
 
     if (!selectorMap[path]) {
-      s = state => (state[path] && state[path].data) || null;
+      s = state => (state[path] && state[path]) || null;
       selectorMap[path] = s;
     } else {
       s = selectorMap[path];
