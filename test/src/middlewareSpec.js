@@ -38,6 +38,17 @@ describe('Endpoint middleware', function() {
     });
   });
 
+  it('passes the url property from the request action as a meta property on the ingest action', function(done) {
+    store.dispatch(requestAction);
+
+    setImmediate(() => {
+      const actions = store.getActions();
+      const ingestAction = actions[1];
+      assert.strictEqual(ingestAction.meta.url, requestAction.payload.url);
+      done();
+    });
+  });
+
   it('catches promises rejected with an error and creates an error ingest action', function(done) {
     const getErrorEndpoint = () => createEndpoint({
       name: 'test-api',

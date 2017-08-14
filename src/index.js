@@ -63,6 +63,7 @@ export const createEndpoint = ({
       meta: {
         params: metaParams,
         path: resolver(...params),
+        url: reqUrl,
       },
       payload: {
         options,
