@@ -43,6 +43,7 @@ describe('utils', function() {
     it('returns an object with the proper format', function() {
       const expected = {
         data: null,
+        error: null,
         pendingRequests: 0,
       };
       assert.deepEqual(state, expected);

@@ -9,3 +9,4 @@ import './actionCreatorsSpec';
 import './reducerSpec';
 import './selectorSpec';
 import './middlewareSpec';
+import './selectorsSpec';

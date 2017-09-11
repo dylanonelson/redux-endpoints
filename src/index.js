@@ -3,6 +3,14 @@ import URL from 'url-parse';
 import { DEFAULT_KEY } from './constants';
 import { camelCase, actionTypeCase, initialEndpointState } from './utils';
 
+export {
+  dataSelector,
+  errorSelector,
+  isPendingSelector,
+} from './selectors';
+
+export { initialEndpointState };
+
 const defaultResolver = () => DEFAULT_KEY;
 
 export const createEndpoint = ({

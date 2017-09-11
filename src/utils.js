@@ -12,5 +12,6 @@ export const actionTypeCase = spinal => (
 
 export const initialEndpointState = () => ({
   data: null,
+  error: null,
   pendingRequests: 0,
 });
