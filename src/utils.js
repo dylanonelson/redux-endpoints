@@ -14,4 +14,6 @@ export const initialEndpointState = () => ({
   data: null,
   error: null,
   pendingRequests: 0,
+  successfulRequests: 0,
+  totalRequests: 0,
 });

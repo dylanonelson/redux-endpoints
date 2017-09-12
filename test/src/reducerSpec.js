@@ -52,6 +52,33 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].pendingRequests, 2);
     });
 
+    it('increments the totalRequests counter for the ingest action', function() {
+      const previous = {
+        '1776': {
+          data: null,
+          pendingRequests: 1,
+          totalRequests: 0,
+        },
+      };
+
+      const result = reducer(previous, ingestAction);
+      assert.strictEqual(result['1776'].totalRequests, 1);
+    });
+
+    it('increments the successfulRequests counter for a successful ingest action', function() {
+      const previous = {
+        '1776': {
+          data: null,
+          pendingRequests: 1,
+          successfulRequests: 0,
+          totalRequests: 0,
+        },
+      };
+
+      const result = reducer(previous, ingestAction);
+      assert.strictEqual(result['1776'].successfulRequests, 1);
+    });
+
     it('updates the data at the correct path for the ingest action', function() {
       const previous = {
         '1776': {
@@ -61,7 +88,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.deepEqual(result['1776'].data, 'test');
+      assert.strictEqual(result['1776'].data, 'test');
     });
 
     it('sets the error key to null if the request was successful', function() {
@@ -79,6 +106,34 @@ describe('An endpoint reducer', function() {
       const result = reducer(previous, ingestAction);
       assert.deepEqual(result['1776'].data, 'test');
       assert.strictEqual(result['1776'].error, null);
+    });
+
+    it('increments the totalRequests counter but not the successfulRequests counter if the ingest action includes an error', function() {
+      const data = {
+        foo: 'bar',
+      };
+
+      const previous = {
+        '1776': {
+          data,
+          pendingRequests: 1,
+          successfulRequests: 0,
+          totalRequests: 0,
+        },
+      };
+
+      const errorMsg = 'There was a problem with the request';
+
+      const errorAction = endpoint.actionCreators.ingest(
+        new Error(errorMsg),
+        requestAction.meta,
+      );
+
+      const result = reducer(previous, errorAction);
+      const state = result['1776'];
+
+      assert.strictEqual(state.successfulRequests, 0);
+      assert.strictEqual(state.totalRequests, 1);
     });
 
     it('leaves the data node untouched and parses the payload as an error if there was one', function() {

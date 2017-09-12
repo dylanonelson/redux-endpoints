@@ -45,6 +45,8 @@ describe('utils', function() {
         data: null,
         error: null,
         pendingRequests: 0,
+        successfulRequests: 0,
+        totalRequests: 0,
       };
       assert.deepEqual(state, expected);
     });

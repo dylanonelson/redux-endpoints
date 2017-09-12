@@ -137,7 +137,18 @@ export const createEndpoint = ({
       } else {
         nextPathState.data = action.payload;
         nextPathState.error = null;
+        nextPathState.successfulRequests = (
+          nextPathState.successfulRequests === undefined
+            ? 1
+            : nextPathState.successfulRequests + 1
+        );
       }
+
+      nextPathState.totalRequests = (
+        nextPathState.totalRequests === undefined
+        ? 1
+        : nextPathState.totalRequests + 1
+      );
       nextPathState.pendingRequests--;
     }
 
