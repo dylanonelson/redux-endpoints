@@ -1,12 +1,10 @@
-import { assert } from 'chai';
-
 import { utils } from './context';
 import { constants } from './context';
 
 import {
   basicEndpoint,
   endpointWithDefaultResolver,
-} from 'fixtures';
+} from './fixtures';
 
 describe('An endpoint reducer', function() {
 
@@ -25,7 +23,7 @@ describe('An endpoint reducer', function() {
       const expected = utils.initialEndpointState();
       expected.pendingRequests = 1;
       const result = reducer({}, requestAction);
-      assert.deepEqual(result[1776], expected);
+      expect(result[1776]).toEqual(expected);
     });
 
     it('decrements the pendingRequests counter for the ingest action', function() {
@@ -37,7 +35,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.strictEqual(result['1776'].pendingRequests, 0);
+      expect(result['1776'].pendingRequests).toBe(0);
     });
 
     it('increments the pendingRequests counter for the request action', function() {
@@ -49,7 +47,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, requestAction);
-      assert.strictEqual(result['1776'].pendingRequests, 2);
+      expect(result['1776'].pendingRequests).toBe(2);
     });
 
     it('increments the totalRequests counter for the ingest action', function() {
@@ -62,7 +60,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.strictEqual(result['1776'].totalRequests, 1);
+      expect(result['1776'].totalRequests).toBe(1);
     });
 
     it('increments the successfulRequests counter for a successful ingest action', function() {
@@ -76,7 +74,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.strictEqual(result['1776'].successfulRequests, 1);
+      expect(result['1776'].successfulRequests).toBe(1);
     });
 
     it('updates the data at the correct path for the ingest action', function() {
@@ -88,7 +86,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.strictEqual(result['1776'].data, 'test');
+      expect(result['1776'].data).toBe('test');
     });
 
     it('sets the error key to null if the request was successful', function() {
@@ -104,8 +102,8 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.deepEqual(result['1776'].data, 'test');
-      assert.strictEqual(result['1776'].error, null);
+      expect(result['1776'].data).toEqual('test');
+      expect(result['1776'].error).toBe(null);
     });
 
     it('increments the totalRequests counter but not the successfulRequests counter if the ingest action includes an error', function() {
@@ -132,8 +130,8 @@ describe('An endpoint reducer', function() {
       const result = reducer(previous, errorAction);
       const state = result['1776'];
 
-      assert.strictEqual(state.successfulRequests, 0);
-      assert.strictEqual(state.totalRequests, 1);
+      expect(state.successfulRequests).toBe(0);
+      expect(state.totalRequests).toBe(1);
     });
 
     it('leaves the data node untouched and parses the payload as an error if there was one', function() {
@@ -155,8 +153,8 @@ describe('An endpoint reducer', function() {
         requestAction.meta,
       );
       const result = reducer(previous, errorAction);
-      assert.strictEqual(result['1776'].data, data);
-      assert.deepEqual(result['1776'].error, {
+      expect(result['1776'].data).toBe(data);
+      expect(result['1776'].error).toEqual({
         message: errorMsg,
         name: 'Error',
       });
@@ -177,7 +175,7 @@ describe('An endpoint reducer', function() {
       const expected = utils.initialEndpointState();
       expected.pendingRequests = 1;
       const result = reducer({}, requestAction);
-      assert.deepEqual(result[constants.DEFAULT_KEY], expected);
+      expect(result[constants.DEFAULT_KEY]).toEqual(expected);
     });
 
     it('decrements the pendingRequests counter for the ingest action', function() {
@@ -189,7 +187,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.strictEqual(result[constants.DEFAULT_KEY].pendingRequests, 0);
+      expect(result[constants.DEFAULT_KEY].pendingRequests).toBe(0);
     });
 
     it('increments the pendingRequests counter for the request action', function() {
@@ -201,7 +199,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, requestAction);
-      assert.strictEqual(result[constants.DEFAULT_KEY].pendingRequests, 2);
+      expect(result[constants.DEFAULT_KEY].pendingRequests).toBe(2);
     });
 
     it('updates the data at the correct path for the ingest action', function() {
@@ -213,7 +211,7 @@ describe('An endpoint reducer', function() {
       };
 
       const result = reducer(previous, ingestAction);
-      assert.deepEqual(result[constants.DEFAULT_KEY].data, 'test');
+      expect(result[constants.DEFAULT_KEY].data).toEqual('test');
     });
 
   });

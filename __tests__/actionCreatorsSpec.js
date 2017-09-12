@@ -1,7 +1,6 @@
-import { assert } from 'chai';
 import resourceJson from '../mock-api/json/resource.json';
 
-import { basicEndpoint } from 'fixtures';
+import { basicEndpoint } from './fixtures';
 
 describe('An endpoint request action creator', function() {
 
@@ -13,43 +12,43 @@ describe('An endpoint request action creator', function() {
   });
 
   it('is a function', function() {
-    assert.isFunction(requestActionCreator);
+    expect(typeof requestActionCreator).toBe('function');
   });
 
   it('has a `toString` method which returns the correct action type', function() {
     const expected = 'mockApi/MAKE_MOCK_API_REQUEST';
-    assert.strictEqual(requestActionCreator.toString(), expected);
+    expect(requestActionCreator.toString()).toBe(expected);
   });
 
   context('returns an action object that', function() {
 
     it('is a plain object', function() {
-      assert.isObject(requestAction);
+      expect(typeof requestAction).toBe('object');
     });
 
     it('has a type derived from its name property', function() {
-      assert.strictEqual(requestAction.type, 'mockApi/MAKE_MOCK_API_REQUEST');
+      expect(requestAction.type).toBe('mockApi/MAKE_MOCK_API_REQUEST');
     });
 
     it('has a payload containing the url', function() {
-      assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
+      expect(requestAction.payload.url).toEqual('http://localhost:1111/api/1776');
     });
 
     it('has a payload containing the options passed as the last parameter', function() {
-      assert.deepEqual(requestAction.payload.options, { foo: 'bar' });
+      expect(requestAction.payload.options).toEqual({ foo: 'bar' });
     });
 
     it('defaults the options key of the payload to an empty object', function() {
       requestAction = basicEndpoint.actionCreators.request(1776);
-      assert.deepEqual(requestAction.payload.options, {});
+      expect(requestAction.payload.options).toEqual({});
     });
 
     it('has a meta property containing the named parameters', function() {
-      assert.deepEqual(requestAction.meta.params, { id: 1776 });
+      expect(requestAction.meta.params).toEqual({ id: 1776 });
     });
 
     it('has a meta property containing a derived path', function() {
-      assert.strictEqual(requestAction.meta.path, 1776);
+      expect(requestAction.meta.path).toBe(1776);
     });
 
   });
@@ -72,34 +71,34 @@ describe('An endpoint ingest action creator', function() {
 
   it('has a `toString` method which returns the correct action type', function() {
     const expected = 'mockApi/INGEST_MOCK_API_RESPONSE';
-    assert.strictEqual(ingestActionCreator.toString(), expected);
+    expect(ingestActionCreator.toString()).toBe(expected);
   });
 
   context('returns an object that', function() {
 
     it('is a plain object', function() {
-      assert.isObject(ingestAction);
+      expect(typeof ingestAction).toBe('object');
     });
 
     it('has a type derived from its name property', function() {
-      assert.strictEqual(ingestAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
+      expect(ingestAction.type).toBe('mockApi/INGEST_MOCK_API_RESPONSE');
     });
 
   });
 
   it('returns the data passed to it as its payload', function() {
-    assert.deepEqual(ingestAction.payload, ingestPayload);
+    expect(ingestAction.payload).toEqual(ingestPayload);
   });
 
   it('returns the second argument as its meta property', function() {
-    assert.deepEqual(ingestAction.meta, requestMeta);
+    expect(ingestAction.meta).toEqual(requestMeta);
   });
 
   it('sets the payload to the error if the payload is an error', function() {
     const error = new Error('Something went wrong with the request');
     const action = ingestActionCreator(error, requestMeta);
 
-    assert.strictEqual(action.payload, error);
+    expect(action.payload).toBe(error);
   });
 
   it('sets the error property to true if the payload is an error', function() {
@@ -108,11 +107,11 @@ describe('An endpoint ingest action creator', function() {
       requestMeta
     );
 
-    assert.strictEqual(action.error, true);
+    expect(action.error).toBe(true);
   });
 
   it('sets the error property to false if the payload is not an error', function() {
-    assert.strictEqual(ingestAction.error, false);
+    expect(ingestAction.error).toBe(false);
   });
 
 });

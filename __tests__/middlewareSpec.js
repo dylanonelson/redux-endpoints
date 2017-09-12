@@ -1,7 +1,6 @@
-import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
 
-import { basicEndpoint } from 'fixtures';
+import { basicEndpoint } from './fixtures';
 import { createEndpoint } from './context';
 
 describe('Endpoint middleware', function() {
@@ -19,10 +18,10 @@ describe('Endpoint middleware', function() {
 
     setImmediate(() => {
       const actions = store.getActions();
-      assert.strictEqual(actions.length, 2);
+      expect(actions.length).toBe(2);
 
       const secondAction = actions[1];
-      assert.strictEqual(secondAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
+      expect(secondAction.type).toBe('mockApi/INGEST_MOCK_API_RESPONSE');
       done();
     });
   });
@@ -33,7 +32,7 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      assert.deepEqual(ingestAction.meta, requestAction.meta);
+      expect(ingestAction.meta).toEqual(requestAction.meta);
       done();
     });
   });
@@ -44,7 +43,7 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      assert.strictEqual(ingestAction.meta.url, requestAction.payload.url);
+      expect(ingestAction.meta.url).toBe(requestAction.payload.url);
       done();
     });
   });
@@ -67,8 +66,8 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      assert(ingestAction.error);
-      assert.strictEqual(ingestAction.payload.message, 'test');
+      expect(ingestAction.error).toBeTruthy();
+      expect(ingestAction.payload.message).toBe('test');
       done();
     });
   });
@@ -91,8 +90,8 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      assert(ingestAction.error);
-      assert.strictEqual(ingestAction.payload.message, 'test');
+      expect(ingestAction.error).toBeTruthy();
+      expect(ingestAction.payload.message).toBe('test');
       done();
     });
   });

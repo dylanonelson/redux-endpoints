@@ -1,5 +1,3 @@
-import { assert } from 'chai';
-
 import { basicEndpoint } from 'fixtures';
 import { createEndpoint } from './context';
 
@@ -38,7 +36,7 @@ describe('An endpoint selector', function() {
       pendingRequests: 0,
     };
 
-    assert.deepEqual(selector(1776)(state), expected);
+    expect(selector(1776)(state)).toEqual(expected);
   });
 
   it('returns data at the resolved path for a complex resolver', function() {
@@ -56,25 +54,25 @@ describe('An endpoint selector', function() {
       },
     };
 
-    assert.deepEqual(selector('books', 1)(state), expected);
+    expect(selector('books', 1)(state)).toEqual(expected);
   });
 
   it('returns a function, even when called multiple times', function() {
     const first = selector(1776);
     const second = selector(1776);
-    assert.isFunction(first);
-    assert.isFunction(second);
+    expect(typeof first).toBe('function');
+    expect(typeof second).toBe('function');
   });
 
   it('returns the same function on the second call', function() {
     const first = selector(1776);
     const second = selector(1776);
-    assert.strictEqual(first, second);
-    assert.isFunction(first);
+    expect(first).toBe(second);
+    expect(typeof first).toBe('function');
   });
 
   it('returns null if the path is not present', function() {
-    assert.strictEqual(selector('yo')(state), null);
+    expect(selector('yo')(state)).toBe(null);
   });
 
 });
