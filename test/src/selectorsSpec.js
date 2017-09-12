@@ -1,3 +1,5 @@
+import { assert } from 'chai';
+
 import { utils } from './context';
 
 const { initialEndpointState } = utils;
@@ -33,13 +35,13 @@ const getStateWithNullData = function () {
 describe('Selectors', function () {
   it('dataSelector returns the data from the last successful request', function () {
     const state = getStateWithSuccessfulResponse({ status: 'OK' });
-    expect(dataSelector(state)).toEqual({ status: 'OK' });
+    assert.deepEqual(dataSelector(state), { status: 'OK' });
   });
 
   it('dataSelector returns null if the data is null', function () {
     const state = getStateWithNullData();
     const result = dataSelector(state);
-    expect(result).toBe(null);
+    assert.strictEqual(result, null);
   });
 
   it('errorSelector returns the error from an unsuccessful request', function () {
@@ -47,31 +49,31 @@ describe('Selectors', function () {
     e.name = 'Fetch error';
     const state = getStateWithError(e);
     const result = errorSelector(state);
-    expect(result).toBe(e);
+    assert.strictEqual(result, e);
   });
 
   it('errorSelector returns null if the data is null', function () {
     const state = getStateWithNullData();
     const result = errorSelector(state);
-    expect(result).toBe(null);
+    assert.strictEqual(result, null);
   });
 
   it('isPendingSelector returns true if there is one or more pending requests', function () {
     const state = getStateWithPendingRequests(1);
     const result = isPendingSelector(state);
-    expect(result).toBe(true);
+    assert.strictEqual(result, true);
   });
 
   it('isPendingSelector returns false if the data is null', function () {
     const state = getStateWithNullData();
     const result = isPendingSelector(state);
-    expect(result).toBe(false);
+    assert.strictEqual(result, false);
   });
 
   it('isPendingSelector returns false if there are no pending requests', function () {
     const state = getStateWithPendingRequests(0);
     const result = isPendingSelector(state);
-    expect(result).toBe(false);
+    assert.strictEqual(result, false);
   });
 });
 

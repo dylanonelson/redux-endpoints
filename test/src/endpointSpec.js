@@ -1,3 +1,5 @@
+import { assert } from 'chai';
+
 import { createEndpoint } from './context.js';
 
 describe('A Redux endpoint module', function() {
@@ -12,19 +14,19 @@ describe('A Redux endpoint module', function() {
   });
 
   it('is an object', function() {
-    expect(typeof ep).toBe('object');
+    assert.isObject(ep);
   });
 
   it('defines actionCreators', function() {
-    expect(typeof ep.actionCreators).toBe('object');
+    assert.isObject(ep.actionCreators);
   });
 
   it('defines middleware', function() {
-    expect(typeof ep.middleware).toBe('function');
+    assert.isFunction(ep.middleware);
   });
 
   it('defines a reducer', function() {
-    expect(typeof ep.reducer).toBe('function');
+    assert.isFunction(ep.reducer);
   });
 
 });

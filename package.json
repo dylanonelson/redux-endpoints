@@ -54,11 +54,5 @@
     "url-parse": "^1.1.9",
     "webpack": "^3.4.0",
     "webpack-dev-server": "^2.6.1"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "fixtures",
-      "mock-api"
-    ]
   }
 }

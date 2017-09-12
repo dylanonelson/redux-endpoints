@@ -1,6 +1,7 @@
+import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
 
-import { basicEndpoint } from './fixtures';
+import { basicEndpoint } from 'fixtures';
 import { createEndpoint } from './context';
 
 describe('Endpoint middleware', function() {
@@ -18,10 +19,10 @@ describe('Endpoint middleware', function() {
 
     setImmediate(() => {
       const actions = store.getActions();
-      expect(actions.length).toBe(2);
+      assert.strictEqual(actions.length, 2);
 
       const secondAction = actions[1];
-      expect(secondAction.type).toBe('mockApi/INGEST_MOCK_API_RESPONSE');
+      assert.strictEqual(secondAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
       done();
     });
   });
@@ -32,7 +33,7 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      expect(ingestAction.meta).toEqual(requestAction.meta);
+      assert.deepEqual(ingestAction.meta, requestAction.meta);
       done();
     });
   });
@@ -43,7 +44,7 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      expect(ingestAction.meta.url).toBe(requestAction.payload.url);
+      assert.strictEqual(ingestAction.meta.url, requestAction.payload.url);
       done();
     });
   });
@@ -66,8 +67,8 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      expect(ingestAction.error).toBeTruthy();
-      expect(ingestAction.payload.message).toBe('test');
+      assert(ingestAction.error);
+      assert.strictEqual(ingestAction.payload.message, 'test');
       done();
     });
   });
@@ -90,8 +91,8 @@ describe('Endpoint middleware', function() {
     setImmediate(() => {
       const actions = store.getActions();
       const ingestAction = actions[1];
-      expect(ingestAction.error).toBeTruthy();
-      expect(ingestAction.payload.message).toBe('test');
+      assert(ingestAction.error);
+      assert.strictEqual(ingestAction.payload.message, 'test');
       done();
     });
   });

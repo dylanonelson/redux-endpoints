@@ -1,3 +1,5 @@
+import { assert } from 'chai';
+
 import { utils } from './context';
 
 describe('utils', function() {
@@ -11,7 +13,7 @@ describe('utils', function() {
     });
 
     it ('transforms spinal to camel case', function() {
-      expect(utils.camelCase(str)).toBe('mockApi');
+      assert.strictEqual(utils.camelCase(str), 'mockApi');
     });
 
   });
@@ -25,7 +27,7 @@ describe('utils', function() {
     });
 
     it ('transforms spinal to camel case', function() {
-      expect(utils.actionTypeCase(str)).toBe('MOCK_API');
+      assert.strictEqual(utils.actionTypeCase(str), 'MOCK_API');
     });
 
   });
@@ -46,7 +48,7 @@ describe('utils', function() {
         successfulRequests: 0,
         totalRequests: 0,
       };
-      expect(state).toEqual(expected);
+      assert.deepEqual(state, expected);
     });
 
   });
