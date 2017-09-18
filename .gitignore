@@ -1,5 +1,6 @@
 .*.s[a-z]?
 .s[a-z]?
 builds/
+coverage/
 dist
 node_modules/

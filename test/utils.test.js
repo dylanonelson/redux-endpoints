@@ -2,45 +2,45 @@ import { assert } from 'chai';
 
 import { utils } from './context';
 
-describe('utils', function() {
+describe('utils', () => {
 
-  context('#camelCase', function() {
+  describe('#camelCase', () => {
 
     let str;
 
-    beforeEach(function() {
+    beforeEach(() => {
       str = 'mock-api';
     });
 
-    it ('transforms spinal to camel case', function() {
+    it ('transforms spinal to camel case', () => {
       assert.strictEqual(utils.camelCase(str), 'mockApi');
     });
 
   });
 
-  context('#actionTypeCase', function() {
+  describe('#actionTypeCase', () => {
 
     let str;
 
-    beforeEach(function() {
+    beforeEach(() => {
       str = 'mock-api';
     });
 
-    it ('transforms spinal to camel case', function() {
+    it ('transforms spinal to camel case', () => {
       assert.strictEqual(utils.actionTypeCase(str), 'MOCK_API');
     });
 
   });
 
-  context('#initialEndpointState', function() {
+  describe('#initialEndpointState', () => {
 
     let state;
 
-    beforeEach(function() {
+    beforeEach(() => {
       state = utils.initialEndpointState();
     });
 
-    it('returns an object with the proper format', function() {
+    it('returns an object with the proper format', () => {
       const expected = {
         data: null,
         error: null,

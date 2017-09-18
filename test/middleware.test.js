@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
 
-import { basicEndpoint } from 'fixtures';
+import { basicEndpoint } from './fixtures';
 import { createEndpoint } from './context';
 
 describe('Endpoint middleware', function() {
@@ -14,7 +14,7 @@ describe('Endpoint middleware', function() {
     requestAction = basicEndpoint.actionCreators.request(1776, { foo: 'bar' });
   });
 
-  it('triggers an ingest action', function(done) {
+  test('triggers an ingest action', function(done) {
     store.dispatch(requestAction);
 
     setImmediate(() => {
@@ -27,7 +27,7 @@ describe('Endpoint middleware', function() {
     });
   });
 
-  it('passes the meta properties from the request to the ingest action', function(done) {
+  test('passes the meta properties from the request to the ingest action', function(done) {
     store.dispatch(requestAction);
 
     setImmediate(() => {
@@ -38,7 +38,7 @@ describe('Endpoint middleware', function() {
     });
   });
 
-  it('passes the url property from the request action as a meta property on the ingest action', function(done) {
+  test('passes the url property from the request action as a meta property on the ingest action', function(done) {
     store.dispatch(requestAction);
 
     setImmediate(() => {
@@ -49,7 +49,7 @@ describe('Endpoint middleware', function() {
     });
   });
 
-  it('catches promises rejected with an error and creates an error ingest action', function(done) {
+  test('catches promises rejected with an error and creates an error ingest action', function(done) {
     const getErrorEndpoint = () => createEndpoint({
       name: 'test-api',
       request: () => new Promise((resolve, reject) => {
@@ -73,7 +73,7 @@ describe('Endpoint middleware', function() {
     });
   });
 
-  it('catches promises rejected with non-Error values and creates an error ingest action', function(done) {
+  test('catches promises rejected with non-Error values and creates an error ingest action', function(done) {
     const getErrorEndpoint = () => createEndpoint({
       name: 'test-api',
       request: () => new Promise((resolve, reject) => {

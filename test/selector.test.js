@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 
-import { basicEndpoint } from 'fixtures';
+import { basicEndpoint } from './fixtures';
 import { createEndpoint } from './context';
 
 const getComplexResolverEndpoint = () => createEndpoint({

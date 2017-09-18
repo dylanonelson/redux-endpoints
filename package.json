@@ -17,12 +17,7 @@
     "build:test": "npm run build -- --config=webpack.config.test.js",
     "dev": "webpack-dev-server",
     "start:tmux": "tmux split-window \"npm run watch:test\" && tmux split-window \"npm run watch\" && tmux select-layout main-vertical && npm run test:server",
-    "test": "mocha ./test/dist/",
-    "pretest": "npm run build:prd && npm run build:test",
-    "test:server": "mocha ./test/dist/ -w",
-    "test:browser": "open ./test/dist/index.html",
-    "watch": "npm run build -- --watch",
-    "watch:test": "npm run build:test -- --watch"
+    "test": "jest"
   },
   "author": "Dylan Nelson",
   "license": "ISC",

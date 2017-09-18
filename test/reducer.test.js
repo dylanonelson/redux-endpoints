@@ -6,13 +6,13 @@ import { constants } from './context';
 import {
   basicEndpoint,
   endpointWithDefaultResolver,
-} from 'fixtures';
+} from './fixtures';
 
 describe('An endpoint reducer', function() {
 
   let endpoint, ingestAction, reducer, requestAction;
 
-  context('from a basic endpoint', function() {
+  describe('from a basic endpoint', function() {
 
     beforeEach(function() {
       endpoint = basicEndpoint;
@@ -21,14 +21,14 @@ describe('An endpoint reducer', function() {
       ingestAction = basicEndpoint.actionCreators.ingest('test', requestAction.meta);
     });
 
-    it('initializes an empty request object for the request action', function() {
+    test('initializes an empty request object for the request action', function() {
       const expected = utils.initialEndpointState();
       expected.pendingRequests = 1;
       const result = reducer({}, requestAction);
       assert.deepEqual(result[1776], expected);
     });
 
-    it('decrements the pendingRequests counter for the ingest action', function() {
+    test('decrements the pendingRequests counter for the ingest action', function() {
       const previous = {
         '1776': {
           data: null,
@@ -40,7 +40,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].pendingRequests, 0);
     });
 
-    it('increments the pendingRequests counter for the request action', function() {
+    test('increments the pendingRequests counter for the request action', function() {
       const previous = {
         '1776': {
           data: null,
@@ -52,7 +52,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].pendingRequests, 2);
     });
 
-    it('increments the totalRequests counter for the ingest action', function() {
+    test('increments the totalRequests counter for the ingest action', function() {
       const previous = {
         '1776': {
           data: null,
@@ -65,7 +65,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].totalRequests, 1);
     });
 
-    it('increments the successfulRequests counter for a successful ingest action', function() {
+    test('increments the successfulRequests counter for a successful ingest action', function() {
       const previous = {
         '1776': {
           data: null,
@@ -79,7 +79,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].successfulRequests, 1);
     });
 
-    it('updates the data at the correct path for the ingest action', function() {
+    test('updates the data at the correct path for the ingest action', function() {
       const previous = {
         '1776': {
           data: null,
@@ -91,7 +91,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].data, 'test');
     });
 
-    it('sets the error key to null if the request was successful', function() {
+    test('sets the error key to null if the request was successful', function() {
       const previous = {
         '1776': {
           data: null,
@@ -108,7 +108,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].error, null);
     });
 
-    it('increments the totalRequests counter but not the successfulRequests counter if the ingest action includes an error', function() {
+    test('increments the totalRequests counter but not the successfulRequests counter if the ingest action includes an error', function() {
       const data = {
         foo: 'bar',
       };
@@ -136,7 +136,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(state.totalRequests, 1);
     });
 
-    it('leaves the data node untouched and parses the payload as an error if there was one', function() {
+    test('leaves the data node untouched and parses the payload as an error if there was one', function() {
       const data = {
         foo: 'bar',
       };
@@ -162,9 +162,27 @@ describe('An endpoint reducer', function() {
       });
     });
 
+    test('returns the previous state if processing an action that is neither request nor ingest', () => {
+      const previous = {
+        '1776': {
+          data: 'foo',
+          pendingRequests: 1,
+        }
+      };
+
+      const randomAction = {
+        type: 'NOT_RECOGNIZED',
+        payload: false,
+      };
+
+      const result = reducer(previous, randomAction);
+
+      expect(result).toBe(previous);
+    });
+
   });
 
-  context('with a default resolver', function() {
+  describe('with a default resolver', function() {
 
     beforeEach(function() {
       endpoint = endpointWithDefaultResolver;
@@ -173,14 +191,14 @@ describe('An endpoint reducer', function() {
       ingestAction = endpoint.actionCreators.ingest('test', requestAction.meta);
     });
 
-    it('initializes an empty request object for the request action', function() {
+    test('initializes an empty request object for the request action', function() {
       const expected = utils.initialEndpointState();
       expected.pendingRequests = 1;
       const result = reducer({}, requestAction);
       assert.deepEqual(result[constants.DEFAULT_KEY], expected);
     });
 
-    it('decrements the pendingRequests counter for the ingest action', function() {
+    test('decrements the pendingRequests counter for the ingest action', function() {
       const previous = {
         [constants.DEFAULT_KEY]: {
           data: null,
@@ -192,7 +210,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result[constants.DEFAULT_KEY].pendingRequests, 0);
     });
 
-    it('increments the pendingRequests counter for the request action', function() {
+    test('increments the pendingRequests counter for the request action', function() {
       const previous = {
         [constants.DEFAULT_KEY]: {
           data: null,
@@ -204,7 +222,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result[constants.DEFAULT_KEY].pendingRequests, 2);
     });
 
-    it('updates the data at the correct path for the ingest action', function() {
+    test('updates the data at the correct path for the ingest action', function() {
       const previous = {
         [constants.DEFAULT_KEY]: {
           data: null,

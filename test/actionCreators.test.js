@@ -1,54 +1,54 @@
 import { assert } from 'chai';
-import resourceJson from '../mock-api/json/resource.json';
+import resourceJson from './mock-api/json/resource.json';
 
-import { basicEndpoint } from 'fixtures';
+import { basicEndpoint } from './fixtures';
 
-describe('An endpoint request action creator', function() {
+describe('An endpoint request action creator', () => {
 
   let requestActionCreator, requestAction;
 
-  beforeEach(function() {
+  beforeEach(() => {
     requestActionCreator = basicEndpoint.actionCreators.request;
     requestAction = basicEndpoint.actionCreators.request(1776, { foo: 'bar' });
   });
 
-  it('is a function', function() {
+  test('is a function', () => {
     assert.isFunction(requestActionCreator);
   });
 
-  it('has a `toString` method which returns the correct action type', function() {
+  test('has a `toString` method which returns the correct action type', () => {
     const expected = 'mockApi/MAKE_MOCK_API_REQUEST';
     assert.strictEqual(requestActionCreator.toString(), expected);
   });
 
-  context('returns an action object that', function() {
+  describe('returns an action object that', () => {
 
-    it('is a plain object', function() {
+    test('is a plain object', () => {
       assert.isObject(requestAction);
     });
 
-    it('has a type derived from its name property', function() {
+    test('has a type derived from its name property', () => {
       assert.strictEqual(requestAction.type, 'mockApi/MAKE_MOCK_API_REQUEST');
     });
 
-    it('has a payload containing the url', function() {
+    test('has a payload containing the url', () => {
       assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
     });
 
-    it('has a payload containing the options passed as the last parameter', function() {
+    test('has a payload containing the options passed as the last parameter', () => {
       assert.deepEqual(requestAction.payload.options, { foo: 'bar' });
     });
 
-    it('defaults the options key of the payload to an empty object', function() {
+    test('defaults the options key of the payload to an empty object', () => {
       requestAction = basicEndpoint.actionCreators.request(1776);
       assert.deepEqual(requestAction.payload.options, {});
     });
 
-    it('has a meta property containing the named parameters', function() {
+    test('has a meta property containing the named parameters', () => {
       assert.deepEqual(requestAction.meta.params, { id: 1776 });
     });
 
-    it('has a meta property containing a derived path', function() {
+    test('has a meta property containing a derived path', () => {
       assert.strictEqual(requestAction.meta.path, 1776);
     });
 
@@ -56,11 +56,11 @@ describe('An endpoint request action creator', function() {
 
 });
 
-describe('An endpoint ingest action creator', function() {
+describe('An endpoint ingest action creator', () => {
 
   let ingestActionCreator, ingestPayload, ingestAction, requestMeta;
 
-  beforeEach(function() {
+  beforeEach(() => {
     ingestActionCreator = basicEndpoint.actionCreators.ingest;
     ingestPayload = resourceJson;
     requestMeta = {
@@ -70,39 +70,39 @@ describe('An endpoint ingest action creator', function() {
     ingestAction = ingestActionCreator(ingestPayload, requestMeta);
   });
 
-  it('has a `toString` method which returns the correct action type', function() {
+  test('has a `toString` method which returns the correct action type', () => {
     const expected = 'mockApi/INGEST_MOCK_API_RESPONSE';
     assert.strictEqual(ingestActionCreator.toString(), expected);
   });
 
-  context('returns an object that', function() {
+  describe('returns an object that', () => {
 
-    it('is a plain object', function() {
+    test('is a plain object', () => {
       assert.isObject(ingestAction);
     });
 
-    it('has a type derived from its name property', function() {
+    test('has a type derived from its name property', () => {
       assert.strictEqual(ingestAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
     });
 
   });
 
-  it('returns the data passed to it as its payload', function() {
+  test('returns the data passed to it as its payload', () => {
     assert.deepEqual(ingestAction.payload, ingestPayload);
   });
 
-  it('returns the second argument as its meta property', function() {
+  test('returns the second argument as its meta property', () => {
     assert.deepEqual(ingestAction.meta, requestMeta);
   });
 
-  it('sets the payload to the error if the payload is an error', function() {
+  test('sets the payload to the error if the payload is an error', () => {
     const error = new Error('Something went wrong with the request');
     const action = ingestActionCreator(error, requestMeta);
 
     assert.strictEqual(action.payload, error);
   });
 
-  it('sets the error property to true if the payload is an error', function() {
+  test('sets the error property to true if the payload is an error', () => {
     const action = ingestActionCreator(
       new Error('Something went wrong with the request'),
       requestMeta
@@ -111,7 +111,7 @@ describe('An endpoint ingest action creator', function() {
     assert.strictEqual(action.error, true);
   });
 
-  it('sets the error property to false if the payload is not an error', function() {
+  test('sets the error property to false if the payload is not an error', () => {
     assert.strictEqual(ingestAction.error, false);
   });
 
