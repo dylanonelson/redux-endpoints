@@ -13,6 +13,41 @@ export { initialEndpointState };
 
 const defaultResolver = () => DEFAULT_KEY;
 
+/**
+ * @param {!Object} options
+ * @param {!string} options.name The name for this endpoint. Will be used to
+ * derive the action names. Must be provided in spinal case. E.g. `my-api` will
+ * be transformed to action name `myApi/MAKE_MY_API_REQUEST`.
+ * @param {!function(url: string, options: Object)} options.request
+ * Takes the url to be requested as well as an options object optionally
+ * supplied to the `request` action creator. Must return a Promise object which
+ * resolves with the successfully requested data and rejects with either a
+ * string value or an Error object.
+ * @param {!string} options.url
+ * The url to be requested when store dispatches the `request` action. May
+ * include any number of url parameters denoted by colons. E.g.
+ * `'/myapi/content/:id'`.
+ * @param {?function} options.resolver
+ * Takes as its arguments the url parameters denoted in options.url with colors.
+ * Takes as its last, optional argument an options object.
+ *
+ * @return {Object} endpoint
+ * @property {Object} actionCreators
+ * @property {function} actionCreators.ingest
+ * The ingest action creator is primarily for internal use, but it is exported
+ * because its `toString` method returns its action type.
+ * @property {function} actionCreators.request
+ * Takes as its arguments the url parameters denoted in options.url with colons.
+ * E.g. `'/myapi/content/:id'` results in a request action creator that takes
+ * one argument, the `id` parameter. In addition, takes as its last, optional
+ * argument an options object to pass in turn to the options.request function.
+ * @property {function} selector Takes the same arguments as the passed
+ * resolver. If no resolver is supplied, it receives no arguments. Returns a
+ * selector that takes the root piece of state where this endpoint's data is
+ * stored and returns the piece of state for the url that the arguments resolve to.
+ * @property {function} reducer Redux reducer.
+ * @property {function} middleware Redux middleware.
+ */
 export const createEndpoint = ({
   name,
   request,

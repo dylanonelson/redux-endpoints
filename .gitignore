@@ -2,5 +2,7 @@
 .s[a-z]?
 builds/
 coverage/
-dist
+dist/
+docs/
 node_modules/
+out/

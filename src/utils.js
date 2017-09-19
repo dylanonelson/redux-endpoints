@@ -1,3 +1,6 @@
+/**
+ * @private
+ */
 export const camelCase = spinal => (
   spinal.split('-').map((s, i) =>
     i !== 0
@@ -6,10 +9,17 @@ export const camelCase = spinal => (
   ).join('')
 );
 
+/**
+ * @private
+ */
 export const actionTypeCase = spinal => (
   spinal.replace('-', '_').toUpperCase()
 );
 
+/**
+ * @return {Object} initalEndpointState
+ * Initial state for a branch of the state managed by an endpoint.
+ */
 export const initialEndpointState = () => ({
   data: null,
   error: null,
