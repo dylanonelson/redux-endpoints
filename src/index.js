@@ -123,9 +123,7 @@ export const createEndpoint = ({
         nextState[path] = Object.assign({}, nextState[path]);
         nextState[path].pendingRequests += 1;
       }
-    }
-
-    if (action.type === ingestActionType) {
+    } else if (action.type === ingestActionType) {
       nextState = Object.assign({}, previous);
       const path = action.meta.path;
       const nextPathState = Object.assign({}, nextState[path]);

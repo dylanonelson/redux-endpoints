@@ -24,7 +24,7 @@ describe('An endpoint reducer', function() {
     test('initializes an empty request object for the request action', function() {
       const expected = utils.initialEndpointState();
       expected.pendingRequests = 1;
-      const result = reducer({}, requestAction);
+      const result = reducer(undefined, requestAction);
       assert.deepEqual(result[1776], expected);
     });
 

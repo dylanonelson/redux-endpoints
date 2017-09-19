@@ -4,10 +4,9 @@ const basicEndpoint = createEndpoint({
   name: 'mock-api',
   request: url => (
     new Promise((resolve, reject) => {
-      fetch(url)
-        .then(resp => resp.json())
-        .then(json => resolve(json))
-        .catch(error => reject(error));
+      resolve({
+        someJson: 'test',
+      });
     })
   ),
   resolver: id => id,
