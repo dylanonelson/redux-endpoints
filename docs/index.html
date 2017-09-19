@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl">
+  <title data-ice="title">Home | redux-endpoints</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Redux modules for API endpoints"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="redux-endpoints"><meta property="twitter:description" content="Redux modules for API endpoints"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/dylanonelson/redux-endpoints"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createEndpoint">createEndpoint</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-dataSelector">dataSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-errorSelector">errorSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isPendingSelector">isPendingSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-actionTypeCase">actionTypeCase</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-camelCase">camelCase</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initialEndpointState">initialEndpointState</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULT_KEY">DEFAULT_KEY</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="redux-endpoints">redux-endpoints</h1><blockquote>
+<p>Define Redux modules for fetching data from API endpoints</p>
+</blockquote>
+<p><img src="https://travis-ci.org/dylanonelson/redux-endpoints.svg?branch=master" alt="Build status"></p>
+<h2 id="motivation">Motivation</h2><p>I found myself writing a lot of boilerplate code every time I wanted to fetch data and ingest it into my Redux store. First, I would define some actions for requesting and ingesting the data. Then I would define a reducer to process those actions. Then I would define some middleware or a saga to intercept the &quot;request&quot; action and fire off the &quot;ingest&quot; one once the API call was complete. Establishing all the cross references and integrating the module into my Redux setup was tedious and error prone. More importantly, I quickly realized that for simple cases I was doing the exact same thing every time, with minor variations caused only by slips of memory or spells of laziness. I made redux-endpoints as a way to truly standardize this type of module definition.</p>
+<h2 id="example">Example</h2><pre><code class="lang-js"><code class="source-code prettyprint">// src/redux-modules/resourceApi/index.js
+import { createEndpoint } from &apos;redux-endpoints&apos;;
+
+const ep = createEndpoint({
+  // Must be spinal case
+  name: &apos;resource-api&apos;,
+  // Receives the url as a parameter and must return a promise
+  request: url =&gt; new Promise((resolve, reject) =&gt; (
+    fetch(url, { credentials: &apos;include&apos; })
+      .then(resp =&gt; resp.json())
+      .then(json =&gt; resolve(json))
+  )),
+  // Receives the url params as arguments and returns the key in the state
+  // where the request data will be stored
+  resolver: id =&gt; id,
+  // Url pattern for requests
+  url: &apos;/api/resource/:id&apos;,
+});
+
+const {
+  actionCreators,
+  actionTypes,
+  middleware,
+  selector,
+  reducer,
+} = ep;
+
+export {
+  actionCreators,
+  actionTypes,
+  middleware,
+  selector,
+};
+
+export default reducer;</code>
+</code></pre>
+<pre><code class="lang-js"><code class="source-code prettyprint">// src/redux-store/index.js
+import { applyMiddleware, createStore } from &apos;redux&apos;;
+
+import endpointReducer, { middleware } from &apos;redux-modules/resourceApi&apos;;
+
+const middleware = applyMiddleware(
+  middleware,
+);
+
+const reducer = combineReducers({
+  resourceApi: endpointReducer,
+});
+
+const store = createStore(reducer, {}, middleware);</code>
+</code></pre>
+<pre><code class="lang-js"><code class="source-code prettyprint">// whereveryouwant.js
+import store from &apos;redux-store&apos;;
+
+import { actionCreators } from &apos;redux-modules/resourceApi&apos;;
+
+store.dispatch(actionCreators.request(1));</code>
+</code></pre>
+<p>The code above triggers:</p>
+<ol>
+<li>An action, <code>resourceApi/MAKE_RESOURCE_API_REQUEST</code>,</li>
+<li>A fetch to the url <code>/api/resource/1</code>, and</li>
+<li>An action, <code>resourceApi/INGEST_RESOURCE_API_RESPONSE</code>.</li>
+</ol>
+<p>At the end of the whole thing, the <code>resourceApi</code> branch of your state will look as follows:</p>
+<pre><code class="lang-json"><code class="source-code prettyprint">{
+  &quot;1&quot;: {
+    &quot;pendingRequests&quot;: 0,
+    &quot;data&quot;: {
+      &quot;id&quot;: 1,
+      &quot;server_attribute&quot;: &quot;server_value&quot;
+    }
+  }
+}</code>
+</code></pre>
+<p>If something went wrong with your request and the Promise were rejected, the <code>resourceApi</code> branch of your state would look as follows:</p>
+<pre><code class="lang-json"><code class="source-code prettyprint">{
+  &quot;1&quot;: {
+    &quot;pendingRequests&quot;: 0,
+    &quot;data&quot;: null,
+    &quot;error&quot;: {
+      &quot;message&quot;: &quot;Something went wrong with the request&quot;,
+      &quot;name&quot;: &quot;Error&quot;
+    }
+  }
+}</code>
+</code></pre>
+</div>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
