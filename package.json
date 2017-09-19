@@ -14,10 +14,7 @@
   "scripts": {
     "build": "webpack --colors --progress",
     "build:prd": "NODE_ENV=production npm run build",
-    "build:test": "npm run build -- --config=webpack.config.test.js",
-    "dev": "webpack-dev-server",
-    "start:tmux": "tmux split-window \"npm run watch:test\" && tmux split-window \"npm run watch\" && tmux select-layout main-vertical && npm run test:server",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "author": "Dylan Nelson",
   "license": "ISC",
