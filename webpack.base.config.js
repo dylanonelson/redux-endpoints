@@ -47,13 +47,6 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     filename: '[name].bundle.js'
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-      },
-    }),
-  ],
   resolve: {
     modules: [
       path.join(__dirname, 'src'),

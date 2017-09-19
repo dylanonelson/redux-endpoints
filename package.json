@@ -13,8 +13,9 @@
   ],
   "scripts": {
     "build": "webpack --colors --progress",
-    "build:prd": "NODE_ENV=production npm run build",
-    "test": "jest --coverage"
+    "posttest": "npm run build",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watch"
   },
   "author": "Dylan Nelson",
   "license": "ISC",
