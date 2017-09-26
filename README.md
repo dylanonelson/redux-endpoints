@@ -119,7 +119,7 @@ Required. A function that returns a Promise. The `request` function is called by
 1. The url to request
 1. Any further options passed to the `request` action creator
 
-The data that resolves the Promise will be passed to the `ingest` action creator (`endpoint.actionCreators.ingest`) and incorporated into the store at the path determined by the `resolver` option (see below). Any errors that reject the promise will be incorporated into the store at the same path under the `'error'` key.
+The data that the Promise resolves (or rejects) with will be passed to the `ingest` action creator (`endpoint.actionCreators.ingest`) and incorporated into the store at the path determined by the `resolver` option (see below). Data the Promise resolves with is stored under the `'data'` key; data the Promise rejects with is stored under the `'error'` key.
 
 ### `url`
 Required. A string. Optionally has colon-prefixed url parameters.
@@ -157,14 +157,14 @@ dispatch(actionCreators.request(id));
 The `request` action creator's `toString` method returns its action type.
 
 #### `endpoint.actionCreators.ingest`
-Creates an ingest action. This action creator is called by the middleware once your endpoint's `request` Promise resolves. The ingest action creator is primarily for internal use, but it is exported because its `toString` method returns its action type.
+Creates an ingest action. This action creator is called by the middleware once your endpoint's `request` Promise resolves or rejects. The ingest action creator is primarily for internal use, but it is exported because its `toString` method returns its action type.
 
 ### `endpoint.selector`
 A function to create selectors. Just like the `resolver` function, it takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. The `selector` function calls the `resolver` to determine which piece of state you want. E.g. in the code above:
 
 ```javascript
 // Retrieve endpoint data for url /api/resource/1000
-const endpointData = selector(1000)(state)`;
+const endpointData = selector(1000)(state);
 ```
 
 It returns a selector that takes as its argument the piece of state managed by the endpoint's reducer (`endpoint.reducer`).
