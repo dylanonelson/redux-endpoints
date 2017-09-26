@@ -13,7 +13,7 @@ export const camelCase = spinal => (
  * @private
  */
 export const actionTypeCase = spinal => (
-  spinal.replace('-', '_').toUpperCase()
+  spinal.replace(new RegExp('-', 'g'), '_').toUpperCase()
 );
 
 /**

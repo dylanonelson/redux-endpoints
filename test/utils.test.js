@@ -26,8 +26,12 @@ describe('utils', () => {
       str = 'mock-api';
     });
 
-    it ('transforms spinal to camel case', () => {
+    it ('transforms spinal to screaming snake case', () => {
       assert.strictEqual(utils.actionTypeCase(str), 'MOCK_API');
+    });
+
+    it('transforms strings with multiple dashes to screaming snake case', () => {
+      assert.strictEqual(utils.actionTypeCase('mock-api-test'), 'MOCK_API_TEST');
     });
 
   });
