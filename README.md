@@ -32,7 +32,6 @@ const endpoint = createEndpoint({
 
 const {
   actionCreators,
-  actionTypes,
   middleware,
   selector,
   reducer,
@@ -40,7 +39,6 @@ const {
 
 export {
   actionCreators,
-  actionTypes,
   middleware,
   selector,
 };
