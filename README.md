@@ -124,12 +124,12 @@ Required. A function that returns a Promise. The `request` function is called by
 The data that resolves the Promise will be passed to the `ingest` action creator (`endpoint.actionCreators.ingest`) and incorporated into the store at the path determined by the `resolver` option (see below). Any errors that reject the promise will be incorporated into the store at the same path under the `'error'` key.
 
 ### `url`
-Required. A string. Optionally has colon-delimited url parameters.
+Required. A string. Optionally has colon-prefixed url parameters.
 
 ### `resolver`
-Optional. A function that takes as its arguments the colon-delimited url parameters in the `url` option. Should return the key where the endpoint's data will be stored.
+Optional. A function that takes as its arguments the colon-prefixed url parameters in the `url` option. Should return the key where the endpoint's data will be stored.
 
-Defaults to a function which returns a default string (`__default__`).
+Defaults to a function which returns a default string (`'__default__'`).
 
 E.g. in the code above, requesting data with `endpoint.actionCreators.request(1000)` would result in the data stored under they key `'1000'` by the reducer.
 
@@ -149,7 +149,7 @@ Action creators for this endpoint. See below.
 
 #### `endpoint.actionCreators.request`
 
-Creates an `request` action. The action type is named and namespaced according to the `name` of your endpoint. E.g. in the code above, `resourceApi/MAKE_RESOURCE_API_REQUEST`. Takes as its arguments the colon-delimited url parameters in the `url` of your endpoint. E.g. in the code above:
+Creates an `request` action. The action type is named and namespaced according to the `name` of your endpoint. E.g. in the code above, `resourceApi/MAKE_RESOURCE_API_REQUEST`. Takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. E.g. in the code above:
 
 ```javascript
 const id = 1000;
@@ -162,7 +162,7 @@ The `request` action creator's `toString` method returns its action type.
 Creates an ingest action. This action creator is called by the middleware once your endpoint's `request` Promise resolves. The ingest action creator is primarily for internal use, but it is exported because its `toString` method returns its action type.
 
 ### `endpoint.selector`
-A function to create selectors. Just like the `request` action creator, it takes as its arguments the colon-delimited url parameters in the `url` of your endpoint. E.g. in the code above:
+A function to create selectors. Just like the `resolver` function, it takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. The `selector` function calls the `resolver` to determine which piece of state you want. E.g. in the code above:
 
 ```javascript
 // Retrieve endpoint data for url /api/resource/1000
