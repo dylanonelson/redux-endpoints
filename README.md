@@ -14,7 +14,7 @@ You can [read the docs](https://dylanonelson.github.io/redux-endpoints/) for the
 // src/redux-modules/resourceApi/index.js
 import { createEndpoint } from 'redux-endpoints';
 
-const ep = createEndpoint({
+const endpoint = createEndpoint({
   // Must be spinal case
   name: 'resource-api',
   // Receives the url as a parameter and must return a promise
@@ -36,7 +36,7 @@ const {
   middleware,
   selector,
   reducer,
-} = ep;
+} = endpoints;
 
 export {
   actionCreators,
@@ -109,3 +109,64 @@ If something went wrong with your request and the Promise were rejected, the `re
   }
 }
 ```
+
+## Options
+
+### `name`
+Required. The name of this endpoint. Must be provided in spinal case.
+
+### `request`
+Required. A function that returns a Promise. The `request` function is called by the endpoint's middleware (`endpoint.middleware`) when the `request` action is fired (`endpoint.actionCreators.request`). It takes two arguments:
+
+1. The url to request
+1. Any further options passed to the `request` action creator
+
+The data that resolves the Promise will be passed to the `ingest` action creator (`endpoint.actionCreators.ingest`) and incorporated into the store at the path determined by the `resolver` option (see below). Any errors that reject the promise will be incorporated into the store at the same path under the `'error'` key.
+
+### `url`
+Required. A string. Optionally has colon-delimited url parameters.
+
+### `resolver`
+Optional. A function that takes as its arguments the colon-delimited url parameters in the `url` option. Should return the key where the endpoint's data will be stored.
+
+Defaults to a function which returns a default string (`__default__`).
+
+E.g. in the code above, requesting data with `endpoint.actionCreators.request(1000)` would result in the data stored under they key `'1000'` by the reducer.
+
+## Methods
+
+### `endpoint.reducer`
+
+A reducer to manage the slice of state where you choose to store your data from this url.
+
+### `endpoint.middleware`
+
+A redux middleware function. Pass it into your `createStore` call to enable the `request` action creator to trigger your data requests.
+
+### `endpoint.actionCreators`
+
+Action creators for this endpoint. See below.
+
+#### `endpoint.actionCreators.request`
+
+Creates an `request` action. The action type is named and namespaced according to the `name` of your endpoint. E.g. in the code above, `resourceApi/MAKE_RESOURCE_API_REQUEST`. Takes as its arguments the colon-delimited url parameters in the `url` of your endpoint. E.g. in the code above:
+
+```javascript
+const id = 1000;
+dispatch(actionCreators.request(id));
+```
+
+The `request` action creator's `toString` method returns its action type.
+
+#### `endpoint.actionCreators.ingest`
+Creates an ingest action. This action creator is called by the middleware once your endpoint's `request` Promise resolves. The ingest action creator is primarily for internal use, but it is exported because its `toString` method returns its action type.
+
+### `endpoint.selector`
+A function to create selectors. Just like the `request` action creator, it takes as its arguments the colon-delimited url parameters in the `url` of your endpoint. E.g. in the code above:
+
+```javascript
+// Retrieve endpoint data for url /api/resource/1000
+const endpointData = selector(1000)(state)`;
+```
+
+It returns a selector that takes as its argument the piece of state managed by the endpoint's reducer (`endpoint.reducer`).
