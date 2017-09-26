@@ -8,28 +8,42 @@ import {
   dataSelector,
   errorSelector,
   isPendingSelector,
+  totalRequestsSelector,
+  successfulRequestsSelector,
 } from './context';
 
-const getStateWithSuccessfulResponse = (response) => {
+function getStateWithSuccessfulResponse(response) {
   const initial = initialEndpointState();
   initial.data = response;
   return initial;
 };
 
-const getStateWithError = (error) => {
+function getStateWithError(error) {
   const initial = initialEndpointState();
   initial.error = error;
   return initial;
 };
 
-const getStateWithPendingRequests = function (num = 1) {
+function getStateWithPendingRequests(num = 1) {
   const initial = initialEndpointState();
   initial.pendingRequests = num;
   return initial;
 };
 
-const getStateWithNullData = function () {
+function getStateWithNullData() {
   return null;
+};
+
+function getStateWithTotalRequests(num = 1) {
+  const initial = initialEndpointState();
+  initial.totalRequests = num;
+  return initial;
+};
+
+function getStateWithSuccessfulRequests(num = 1) {
+  const initial = initialEndpointState();
+  initial.successfulRequests = num;
+  return initial;
 };
 
 describe('Selectors', function () {
@@ -74,6 +88,30 @@ describe('Selectors', function () {
     const state = getStateWithPendingRequests(0);
     const result = isPendingSelector(state);
     assert.strictEqual(result, false);
+  });
+
+  it('totalRequestsSelector returns the number of total requests', () => {
+    const state = getStateWithTotalRequests(3);
+    const result = totalRequestsSelector(state);
+    expect(result).toBe(3);
+  });
+
+  it('totalRequestsSelector returns 0 if the state is invalid', () => {
+    const state = getStateWithNullData();
+    const result = totalRequestsSelector(state);
+    expect(result).toBe(0);
+  });
+
+  it('successfulRequestsSelector returns the number of successfulRequests', () => {
+    const state = getStateWithSuccessfulRequests(3);
+    const result = successfulRequestsSelector(state);
+    expect(result).toBe(3);
+  });
+
+  it('successfulRequestsSelector returns 0 if the state is invalid', () => {
+    const state = getStateWithNullData();
+    const result = successfulRequestsSelector(state);
+    expect(result).toBe(0);
   });
 });
 

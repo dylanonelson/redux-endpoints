@@ -7,6 +7,8 @@ export {
   dataSelector,
   errorSelector,
   isPendingSelector,
+  successfulRequestsSelector,
+  totalRequestsSelector,
 } from './selectors';
 
 export { initialEndpointState };
