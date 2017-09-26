@@ -84,6 +84,8 @@ At the end of the whole thing, the `resourceApi` branch of your state will look 
 {
   "1": {
     "pendingRequests": 0,
+    "totalRequests": 1,
+    "successfulRequests": 1,
     "data": {
       "id": 1,
       "server_attribute": "server_value"
@@ -97,6 +99,8 @@ If something went wrong with your request and the Promise were rejected, the `re
 {
   "1": {
     "pendingRequests": 0,
+    "totalRequests": 1,
+    "successfulRequests": 0,
     "data": null,
     "error": {
       "message": "Something went wrong with the request",
