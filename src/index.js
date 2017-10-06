@@ -167,8 +167,8 @@ export const createEndpoint = ({
       nextState[path] = nextPathState;
 
       if (action.error) {
-        const { message, name } = action.payload;
-        nextPathState.error = { message, name }
+        const { message, name, stack } = action.payload;
+        nextPathState.error = { message, name, stack }
       } else {
         nextPathState.data = action.payload;
         nextPathState.error = null;
