@@ -148,17 +148,23 @@ describe('An endpoint reducer', function() {
         },
       };
 
-      const errorMsg = 'There was a problem with the request';
+      const error = new Error('There was a problem with the request');
 
       const errorAction = endpoint.actionCreators.ingest(
-        new Error(errorMsg),
+        error,
         requestAction.meta,
       );
+
+      const { message, name, stack } = error;
+
       const result = reducer(previous, errorAction);
+
       assert.strictEqual(result['1776'].data, data);
+
       assert.deepEqual(result['1776'].error, {
-        message: errorMsg,
-        name: 'Error',
+        message,
+        name,
+        stack,
       });
     });
 
