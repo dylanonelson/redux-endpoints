@@ -150,12 +150,14 @@ describe('An endpoint reducer', function() {
 
       const error = new Error('There was a problem with the request');
 
+      error.customProp = 'foo';
+
       const errorAction = endpoint.actionCreators.ingest(
         error,
         requestAction.meta,
       );
 
-      const { message, name, stack } = error;
+      const { customProp, message, name, stack } = error;
 
       const result = reducer(previous, errorAction);
 
@@ -165,6 +167,7 @@ describe('An endpoint reducer', function() {
         message,
         name,
         stack,
+        customProp,
       });
     });
 

@@ -167,8 +167,14 @@ export const createEndpoint = ({
       nextState[path] = nextPathState;
 
       if (action.error) {
-        const { message, name, stack } = action.payload;
+        const { payload } = action;
+        const { message, name, stack } = payload;
         nextPathState.error = { message, name, stack }
+        // Transfer custom properties as well
+        Object.keys(payload).forEach((key) => {
+          const value = payload[key];
+          nextPathState.error[key] = value;
+        });
       } else {
         nextPathState.data = action.payload;
         nextPathState.error = null;
