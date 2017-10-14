@@ -3,13 +3,21 @@ import URL from 'url-parse';
 import { DEFAULT_KEY } from './constants';
 import { camelCase, actionTypeCase, initialEndpointState } from './utils';
 
-export {
+import {
   dataSelector,
   errorSelector,
   isPendingSelector,
   successfulRequestsSelector,
   totalRequestsSelector,
 } from './selectors';
+
+export {
+  dataSelector,
+  errorSelector,
+  isPendingSelector,
+  successfulRequestsSelector,
+  totalRequestsSelector,
+};
 
 export { initialEndpointState };
 
@@ -30,6 +38,9 @@ const defaultResolver = () => DEFAULT_KEY;
  * include any number of url parameters denoted by colons. E.g.
  * `'/myapi/content/:id'`.
  * @param {?function} options.resolver
+ * Takes as its arguments the url parameters denoted in options.url with colors.
+ * Takes as its last, optional argument an options object.
+ * @param {?function} options.rootSelector
  * Takes as its arguments the url parameters denoted in options.url with colors.
  * Takes as its last, optional argument an options object.
  *
@@ -53,10 +64,12 @@ const defaultResolver = () => DEFAULT_KEY;
 export const createEndpoint = ({
   name,
   request,
-  url,
   resolver = defaultResolver,
+  rootSelector,
+  url,
 }) => {
   const actionTypeCaseName = actionTypeCase(name);
+
   const camelCaseName = camelCase(name);
 
   const parsedUrl = new URL(url);
@@ -206,7 +219,7 @@ export const createEndpoint = ({
     let s;
 
     if (!selectorMap[path]) {
-      s = state => (state[path] && state[path]) || null;
+      s = state => (state[path] || null);
       selectorMap[path] = s;
     } else {
       s = selectorMap[path];
@@ -215,10 +228,76 @@ export const createEndpoint = ({
     return s;
   };
 
+  const getPathSelector = (...params) => {
+    const path = resolver(...params);
+    let s;
+
+    if (!selectorMap[path]) {
+      const subSelector = state => ((state && state[path]) || null);
+      s = (state) => subSelector(rootSelector(state));
+      selectorMap[path] = s;
+    } else {
+      s = selectorMap[path];
+    }
+
+    return s;
+  }
+
+  const dataSelectorMap = {};
+  const isPendingSelectorMap = {};
+  const errorSelectorMap = {};
+
+  const selectors = {
+    getDataSelector(...params) {
+      let s;
+      const path = resolver(...params);
+      if (!dataSelectorMap[path]) {
+        s = state => dataSelector(
+          getPathSelector(...params)(state)
+        );
+        dataSelectorMap[path] = s;
+      } else {
+        s = dataSelectorMap[path];
+      }
+
+      return s;
+    },
+    getIsPendingSelector(...params) {
+      let s;
+      const path = resolver(...params);
+      if (!isPendingSelectorMap[path]) {
+        s = state => isPendingSelector(
+          getPathSelector(...params)(state)
+        );
+        isPendingSelectorMap[path] = s;
+      } else {
+        s = isPendingSelectorMap[path];
+      }
+
+      return s;
+    },
+    getErrorSelector(...params) {
+      let s;
+      const path = resolver(...params);
+      if (!errorSelectorMap[path]) {
+        s = state => errorSelector(
+          getPathSelector(...params)(state)
+        );
+        errorSelectorMap[path] = s;
+      } else {
+        s = errorSelectorMap[path];
+      }
+
+      return s;
+    },
+    getPathSelector,
+  };
+
   return {
     actionCreators,
     middleware,
     reducer,
     selector,
+    selectors,
   };
 };
