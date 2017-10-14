@@ -262,20 +262,6 @@ export const createEndpoint = ({
 
       return s;
     },
-    getIsPendingSelector(...params) {
-      let s;
-      const path = resolver(...params);
-      if (!isPendingSelectorMap[path]) {
-        s = state => isPendingSelector(
-          getPathSelector(...params)(state)
-        );
-        isPendingSelectorMap[path] = s;
-      } else {
-        s = isPendingSelectorMap[path];
-      }
-
-      return s;
-    },
     getErrorSelector(...params) {
       let s;
       const path = resolver(...params);
@@ -286,6 +272,20 @@ export const createEndpoint = ({
         errorSelectorMap[path] = s;
       } else {
         s = errorSelectorMap[path];
+      }
+
+      return s;
+    },
+    getIsPendingSelector(...params) {
+      let s;
+      const path = resolver(...params);
+      if (!isPendingSelectorMap[path]) {
+        s = state => isPendingSelector(
+          getPathSelector(...params)(state)
+        );
+        isPendingSelectorMap[path] = s;
+      } else {
+        s = isPendingSelectorMap[path];
       }
 
       return s;
