@@ -27,3 +27,10 @@ export const initialEndpointState = () => ({
   successfulRequests: 0,
   totalRequests: 0,
 });
+
+/**
+ * @private
+ */
+export const compose = (...funcs) => data => (
+  funcs.reduceRight((v, f) => f(v), data)
+);

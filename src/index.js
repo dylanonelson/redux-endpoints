@@ -1,7 +1,7 @@
 import URL from 'url-parse';
 
 import { DEFAULT_KEY } from './constants';
-import { camelCase, actionTypeCase, initialEndpointState } from './utils';
+import { camelCase, compose, actionTypeCase, initialEndpointState } from './utils';
 
 export {
   dataSelector,
@@ -32,6 +32,11 @@ const defaultResolver = () => DEFAULT_KEY;
  * @param {?function} options.resolver
  * Takes as its arguments the url parameters denoted in options.url with colors.
  * Takes as its last, optional argument an options object.
+ * @param {?function} options.rootSelector
+ * A selector that takes the state as its parameter and returns the root
+ * location of the endpoint’s state. Defaults to `(state => state)`. The
+ * `rootSelector` argument is called by the `selector` function to compute the
+ * piece of state to select from.
  *
  * @return {Object} endpoint
  * @property {Object} actionCreators
@@ -43,10 +48,10 @@ const defaultResolver = () => DEFAULT_KEY;
  * E.g. `'/myapi/content/:id'` results in a request action creator that takes
  * one argument, the `id` parameter. In addition, takes as its last, optional
  * argument an options object to pass in turn to the options.request function.
- * @property {function} selector Takes the same arguments as the passed
- * resolver. If no resolver is supplied, it receives no arguments. Returns a
- * selector that takes the root piece of state where this endpoint's data is
- * stored and returns the piece of state for the url that the arguments resolve to.
+ * @property {function} selector Takes as its first argument the state. As its
+ * remaining arguments it takes the same arguments as the passed resolver. If no
+ * resolver is supplied, it receives no arguments. Returns the piece of state
+ * for the url that the resolver arguments resolve to.
  * @property {function} reducer Redux reducer.
  * @property {function} middleware Redux middleware.
  */
@@ -55,6 +60,7 @@ export const createEndpoint = ({
   request,
   url,
   resolver = defaultResolver,
+  rootSelector,
 }) => {
   const actionTypeCaseName = actionTypeCase(name);
   const camelCaseName = camelCase(name);
@@ -63,6 +69,8 @@ export const createEndpoint = ({
   // Thanks, Jeremy
   const namedParam = /(\(\?)?:\w+/g;
   const urlParams = [];
+
+  rootSelector = rootSelector || (state => state);
 
   let match = true;
 
@@ -201,18 +209,21 @@ export const createEndpoint = ({
 
   const selectorMap = {};
 
-  const selector = (...params) => {
+  const selector = (state, ...params) => {
     const path = resolver(...params);
     let s;
 
     if (!selectorMap[path]) {
-      s = state => (state[path] && state[path]) || null;
+      s = state => (state && state[path]) || null;
       selectorMap[path] = s;
     } else {
       s = selectorMap[path];
     }
 
-    return s;
+    return compose(
+      s,
+      rootSelector,
+    )(state);
   };
 
   return {
