@@ -598,7 +598,7 @@
     "__docId__": 50,
     "kind": "file",
     "name": "src/index.js",
-    "content": "import URL from 'url-parse';\n\nimport { DEFAULT_KEY } from './constants';\nimport { camelCase, actionTypeCase, initialEndpointState } from './utils';\n\nexport {\n  dataSelector,\n  errorSelector,\n  isPendingSelector,\n} from './selectors';\n\nexport { initialEndpointState };\n\nconst defaultResolver = () => DEFAULT_KEY;\n\n/**\n * @param {!Object} options\n * @param {!string} options.name The name for this endpoint. Will be used to\n * derive the action names. Must be provided in spinal case. E.g. `my-api` will\n * be transformed to action name `myApi/MAKE_MY_API_REQUEST`.\n * @param {!function(url: string, options: Object)} options.request\n * Takes the url to be requested as well as an options object optionally\n * supplied to the `request` action creator. Must return a Promise object which\n * resolves with the successfully requested data and rejects with either a\n * string value or an Error object.\n * @param {!string} options.url\n * The url to be requested when store dispatches the `request` action. May\n * include any number of url parameters denoted by colons. E.g.\n * `'/myapi/content/:id'`.\n * @param {?function} options.resolver\n * Takes as its arguments the url parameters denoted in options.url with colors.\n * Takes as its last, optional argument an options object.\n *\n * @return {Object} endpoint\n * @property {Object} actionCreators\n * @property {function} actionCreators.ingest\n * The ingest action creator is primarily for internal use, but it is exported\n * because its `toString` method returns its action type.\n * @property {function} actionCreators.request\n * Takes as its arguments the url parameters denoted in options.url with colons.\n * E.g. `'/myapi/content/:id'` results in a request action creator that takes\n * one argument, the `id` parameter. In addition, takes as its last, optional\n * argument an options object to pass in turn to the options.request function.\n * @property {function} selector Takes the same arguments as the passed\n * resolver. If no resolver is supplied, it receives no arguments. Returns a\n * selector that takes the root piece of state where this endpoint's data is\n * stored and returns the piece of state for the url that the arguments resolve to.\n * @property {function} reducer Redux reducer.\n * @property {function} middleware Redux middleware.\n */\nexport const createEndpoint = ({\n  name,\n  request,\n  url,\n  resolver = defaultResolver,\n}) => {\n  const actionTypeCaseName = actionTypeCase(name);\n  const camelCaseName = camelCase(name);\n\n  const parsedUrl = new URL(url);\n  // Thanks, Jeremy\n  const namedParam = /(\\(\\?)?:\\w+/g;\n  const urlParams = [];\n\n  let match = true;\n\n  while (match) {\n    match = namedParam.exec(parsedUrl.pathname);\n    if (match) urlParams.push(match[0]);\n  }\n\n  const ingestActionType =\n    `${camelCaseName}/INGEST_${actionTypeCaseName}_RESPONSE`;\n\n  const requestActionType =\n    `${camelCaseName}/MAKE_${actionTypeCaseName}_REQUEST`;\n\n  const ingestActionCreator = (payload, meta) => {\n    return {\n      error: (payload instanceof Error) ? true : false,\n      meta,\n      payload,\n      type: ingestActionType,\n    };\n  };\n\n  ingestActionCreator.toString = () => ingestActionType;\n\n  const requestActionCreator = (...params) => {\n    let options = {}, reqUrl = url;\n\n    urlParams.forEach((p, i) => {\n      reqUrl = reqUrl.replace(p, params[i]);\n    });\n\n    if (typeof params[params.length - 1] === 'object') {\n      options = params[params.length - 1];\n    }\n\n    const metaParams = urlParams.reduce((memo, p, i) => {\n      memo[p.replace(':', '')] = params[i];\n      return memo;\n    }, {});\n\n    return {\n      meta: {\n        params: metaParams,\n        path: resolver(...params),\n        url: reqUrl,\n      },\n      payload: {\n        options,\n        url: reqUrl,\n      },\n      type: requestActionType,\n    };\n  };\n\n  requestActionCreator.toString = () => requestActionType;\n\n  const actionCreators = {\n    ingest: ingestActionCreator,\n    request: requestActionCreator,\n  };\n\n  const middleware = store => next => action => {\n    if (action.type === requestActionType) {\n      request(action.payload.url, action.payload.options)\n        .then(data =>\n          store.dispatch(actionCreators.ingest(data, action.meta))\n        )\n        .catch(error => {\n          let payload;\n\n          if (error instanceof Error) {\n            payload = error;\n          } else {\n            payload = new Error(error);\n          }\n\n          store.dispatch(actionCreators.ingest(payload, action.meta))\n        });\n    }\n    return next(action);\n  }\n\n  const reducer = (previous = {}, action) => {\n    let nextState = null;\n\n    if (action.type === requestActionType) {\n      nextState = Object.assign({}, previous);\n      const path = action.meta.path;\n      if (!nextState[path]) {\n        const init = initialEndpointState();\n        init.pendingRequests = 1;\n        nextState[path] = init\n      } else {\n        nextState[path] = Object.assign({}, nextState[path]);\n        nextState[path].pendingRequests += 1;\n      }\n    } else if (action.type === ingestActionType) {\n      nextState = Object.assign({}, previous);\n      const path = action.meta.path;\n      const nextPathState = Object.assign({}, nextState[path]);\n      nextState[path] = nextPathState;\n\n      if (action.error) {\n        const { message, name } = action.payload;\n        nextPathState.error = { message, name }\n      } else {\n        nextPathState.data = action.payload;\n        nextPathState.error = null;\n        nextPathState.successfulRequests = (\n          nextPathState.successfulRequests === undefined\n            ? 1\n            : nextPathState.successfulRequests + 1\n        );\n      }\n\n      nextPathState.totalRequests = (\n        nextPathState.totalRequests === undefined\n        ? 1\n        : nextPathState.totalRequests + 1\n      );\n      nextPathState.pendingRequests--;\n    }\n\n    if (nextState !== null)\n      return nextState;\n\n    return previous;\n  };\n\n  const selectorMap = {};\n\n  const selector = (...params) => {\n    const path = resolver(...params);\n    let s;\n\n    if (!selectorMap[path]) {\n      s = state => (state[path] && state[path]) || null;\n      selectorMap[path] = s;\n    } else {\n      s = selectorMap[path];\n    }\n\n    return s;\n  };\n\n  return {\n    actionCreators,\n    middleware,\n    reducer,\n    selector,\n  };\n};\n",
+    "content": "import URL from 'url-parse';\n\nimport { DEFAULT_KEY } from './constants';\nimport { camelCase, compose, actionTypeCase, initialEndpointState } from './utils';\n\nexport {\n  dataSelector,\n  errorSelector,\n  isPendingSelector,\n  successfulRequestsSelector,\n  totalRequestsSelector,\n} from './selectors';\n\nexport { initialEndpointState };\n\nconst defaultResolver = () => DEFAULT_KEY;\n\n/**\n * @param {!Object} options\n * @param {!string} options.name The name for this endpoint. Will be used to\n * derive the action names. Must be provided in spinal case. E.g. `my-api` will\n * be transformed to action name `myApi/MAKE_MY_API_REQUEST`.\n * @param {!function(url: string, options: Object)} options.request\n * Takes the url to be requested as well as an options object optionally\n * supplied to the `request` action creator. Must return a Promise object which\n * resolves with the successfully requested data and rejects with either a\n * string value or an Error object.\n * @param {!string} options.url\n * The url to be requested when store dispatches the `request` action. May\n * include any number of url parameters denoted by colons. E.g.\n * `'/myapi/content/:id'`.\n * @param {?function} options.resolver\n * Takes as its arguments the url parameters denoted in options.url with colors.\n * Takes as its last, optional argument an options object.\n * @param {?function} options.rootSelector\n * A selector that takes the state as its parameter and returns the root\n * location of the endpoint’s state. Defaults to `(state => state)`. The\n * `rootSelector` argument is called by the `selector` function to compute the\n * piece of state to select from.\n *\n * @return {Object} endpoint\n * @property {Object} actionCreators\n * @property {function} actionCreators.ingest\n * The ingest action creator is primarily for internal use, but it is exported\n * because its `toString` method returns its action type.\n * @property {function} actionCreators.request\n * Takes as its arguments the url parameters denoted in options.url with colons.\n * E.g. `'/myapi/content/:id'` results in a request action creator that takes\n * one argument, the `id` parameter. In addition, takes as its last, optional\n * argument an options object to pass in turn to the options.request function.\n * @property {function} selector Takes as its first argument the state. As its\n * remaining arguments it takes the same arguments as the passed resolver. If no\n * resolver is supplied, it receives no arguments. Returns the piece of state\n * for the url that the resolver arguments resolve to.\n * @property {function} reducer Redux reducer.\n * @property {function} middleware Redux middleware.\n */\nexport const createEndpoint = ({\n  name,\n  request,\n  url,\n  resolver = defaultResolver,\n  rootSelector,\n}) => {\n  const actionTypeCaseName = actionTypeCase(name);\n  const camelCaseName = camelCase(name);\n\n  const parsedUrl = new URL(url);\n  // Thanks, Jeremy\n  const namedParam = /(\\(\\?)?:\\w+/g;\n  const urlParams = [];\n\n  rootSelector = rootSelector || (state => state);\n\n  let match = true;\n\n  while (match) {\n    match = namedParam.exec(parsedUrl.pathname);\n    if (match) urlParams.push(match[0]);\n  }\n\n  const ingestActionType =\n    `${camelCaseName}/INGEST_${actionTypeCaseName}_RESPONSE`;\n\n  const requestActionType =\n    `${camelCaseName}/MAKE_${actionTypeCaseName}_REQUEST`;\n\n  const ingestActionCreator = (payload, meta) => {\n    return {\n      error: (payload instanceof Error) ? true : false,\n      meta,\n      payload,\n      type: ingestActionType,\n    };\n  };\n\n  ingestActionCreator.toString = () => ingestActionType;\n\n  const requestActionCreator = (...params) => {\n    let options = {}, reqUrl = url;\n\n    urlParams.forEach((p, i) => {\n      reqUrl = reqUrl.replace(p, params[i]);\n    });\n\n    if (typeof params[params.length - 1] === 'object') {\n      options = params[params.length - 1];\n    }\n\n    const metaParams = urlParams.reduce((memo, p, i) => {\n      memo[p.replace(':', '')] = params[i];\n      return memo;\n    }, {});\n\n    return {\n      meta: {\n        params: metaParams,\n        path: resolver(...params),\n        url: reqUrl,\n      },\n      payload: {\n        options,\n        url: reqUrl,\n      },\n      type: requestActionType,\n    };\n  };\n\n  requestActionCreator.toString = () => requestActionType;\n\n  const actionCreators = {\n    ingest: ingestActionCreator,\n    request: requestActionCreator,\n  };\n\n  const middleware = store => next => action => {\n    if (action.type === requestActionType) {\n      request(action.payload.url, action.payload.options)\n        .then(data =>\n          store.dispatch(actionCreators.ingest(data, action.meta))\n        )\n        .catch(error => {\n          let payload;\n\n          if (error instanceof Error) {\n            payload = error;\n          } else {\n            payload = new Error(error);\n          }\n\n          store.dispatch(actionCreators.ingest(payload, action.meta))\n        });\n    }\n    return next(action);\n  }\n\n  const reducer = (previous = {}, action) => {\n    let nextState = null;\n\n    if (action.type === requestActionType) {\n      nextState = Object.assign({}, previous);\n      const path = action.meta.path;\n      if (!nextState[path]) {\n        const init = initialEndpointState();\n        init.pendingRequests = 1;\n        nextState[path] = init\n      } else {\n        nextState[path] = Object.assign({}, nextState[path]);\n        nextState[path].pendingRequests += 1;\n      }\n    } else if (action.type === ingestActionType) {\n      nextState = Object.assign({}, previous);\n      const path = action.meta.path;\n      const nextPathState = Object.assign({}, nextState[path]);\n      nextState[path] = nextPathState;\n\n      if (action.error) {\n        const { payload } = action;\n        const { message, name, stack } = payload;\n        nextPathState.error = { message, name, stack }\n        // Transfer custom properties as well\n        Object.keys(payload).forEach((key) => {\n          const value = payload[key];\n          nextPathState.error[key] = value;\n        });\n      } else {\n        nextPathState.data = action.payload;\n        nextPathState.error = null;\n        nextPathState.successfulRequests = (\n          nextPathState.successfulRequests === undefined\n            ? 1\n            : nextPathState.successfulRequests + 1\n        );\n      }\n\n      nextPathState.totalRequests = (\n        nextPathState.totalRequests === undefined\n        ? 1\n        : nextPathState.totalRequests + 1\n      );\n      nextPathState.pendingRequests--;\n    }\n\n    if (nextState !== null)\n      return nextState;\n\n    return previous;\n  };\n\n  const selectorMap = {};\n\n  const selector = (state, ...params) => {\n    const path = resolver(...params);\n    let s;\n\n    if (!selectorMap[path]) {\n      s = state => (state && state[path]) || null;\n      selectorMap[path] = s;\n    } else {\n      s = selectorMap[path];\n    }\n\n    return compose(\n      s,\n      rootSelector,\n    )(state);\n  };\n\n  return {\n    actionCreators,\n    middleware,\n    reducer,\n    selector,\n  };\n};\n",
     "static": true,
     "longname": "/Users/207008/Repos/redux-endpoints/src/index.js",
     "access": "public",
@@ -619,7 +619,7 @@
     "importPath": "redux-endpoints/src/index.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 14,
+    "lineNumber": 16,
     "undocument": true,
     "params": [],
     "return": null,
@@ -639,7 +639,7 @@
     "importPath": "redux-endpoints/src/index.js",
     "importStyle": "{createEndpoint}",
     "description": "",
-    "lineNumber": 51,
+    "lineNumber": 58,
     "params": [
       {
         "nullable": false,
@@ -690,6 +690,16 @@
         "optional": false,
         "name": "options.resolver",
         "description": "Takes as its arguments the url parameters denoted in options.url with colors.\nTakes as its last, optional argument an options object."
+      },
+      {
+        "nullable": true,
+        "types": [
+          "function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.rootSelector",
+        "description": "A selector that takes the state as its parameter and returns the root\nlocation of the endpoint’s state. Defaults to `(state => state)`. The\n`rootSelector` argument is called by the `selector` function to compute the\npiece of state to select from."
       }
     ],
     "properties": [
@@ -731,7 +741,7 @@
         "spread": false,
         "optional": false,
         "name": "selector",
-        "description": "Takes the same arguments as the passed\nresolver. If no resolver is supplied, it receives no arguments. Returns a\nselector that takes the root piece of state where this endpoint's data is\nstored and returns the piece of state for the url that the arguments resolve to."
+        "description": "Takes as its first argument the state. As its\nremaining arguments it takes the same arguments as the passed resolver. If no\nresolver is supplied, it receives no arguments. Returns the piece of state\nfor the url that the resolver arguments resolve to."
       },
       {
         "nullable": null,
@@ -767,7 +777,7 @@
     "__docId__": 53,
     "kind": "file",
     "name": "src/selectors.js",
-    "content": "/**\n * @param {Object} state A piece of state attached to one url.\n * @return {Object|null} Either the data most recently fetched from that url or null if there is none.\n */\nexport const dataSelector = (state) => {\n  if (state && state.data) {\n    return state.data;\n  }\n\n  return null;\n};\n\n/**\n * @param {Object} state A piece of state attached to one url.\n * @return {Object|null} error Either an error, if there was one during the last request, or null.\n * @property {string} name\n * @property {string} message\n */\nexport const errorSelector = (state) => {\n  if (state && state.error) {\n    return state.error;\n  }\n\n  return null;\n};\n\n/**\n * @param {Object} state A piece of state attached to one url.\n * @return {boolean} isPending Whether there is a request pending for that url.\n */\nexport const isPendingSelector = (state) => {\n  if (state && state.pendingRequests) {\n    return state.pendingRequests > 0;\n  }\n\n  return false;\n};\n",
+    "content": "/**\n * @param {Object} state A piece of state attached to one url.\n * @return {Object|null} Either the data most recently fetched from that url or null if there is none.\n */\nexport const dataSelector = (state) => {\n  if (state && state.data) {\n    return state.data;\n  }\n\n  return null;\n};\n\n/**\n * @param {Object} state A piece of state attached to one url.\n * @return {Object|null} error Either an error, if there was one during the last request, or null.\n * @property {string} name\n * @property {string} message\n */\nexport const errorSelector = (state) => {\n  if (state && state.error) {\n    return state.error;\n  }\n\n  return null;\n};\n\n/**\n * @param {Object} state A piece of state attached to one url.\n * @return {boolean} isPending Whether there is a request pending for that url.\n */\nexport const isPendingSelector = (state) => {\n  if (state && state.pendingRequests) {\n    return state.pendingRequests > 0;\n  }\n\n  return false;\n};\n\n/**\n * @param {Object} state A piece of state attached to one url.\n * @return {boolean} totalRequests How many requests, successful or unsuccessful, have been made to this url.\n */\nexport const totalRequestsSelector = (state) => {\n  if (state && typeof state.totalRequests === 'number') {\n    return state.totalRequests;\n  }\n\n  return 0;\n};\n\n/**\n * @param {Object} state A piece of state attached to one url.\n * @return {boolean} totalRequests How many successful requests have been made to this url. A successful request is a request whose Promise is not rejected.\n */\nexport const successfulRequestsSelector = (state) => {\n  if (state && typeof state.successfulRequests === 'number') {\n    return state.successfulRequests;\n  }\n\n  return 0;\n};\n",
     "static": true,
     "longname": "/Users/207008/Repos/redux-endpoints/src/selectors.js",
     "access": "public",
@@ -908,9 +918,81 @@
   },
   {
     "__docId__": 57,
+    "kind": "function",
+    "name": "totalRequestsSelector",
+    "memberof": "src/selectors.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/selectors.js~totalRequestsSelector",
+    "access": "public",
+    "export": true,
+    "importPath": "redux-endpoints/src/selectors.js",
+    "importStyle": "{totalRequestsSelector}",
+    "description": "",
+    "lineNumber": 43,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "state",
+        "description": "A piece of state attached to one url."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "boolean"
+      ],
+      "spread": false,
+      "description": "totalRequests How many requests, successful or unsuccessful, have been made to this url."
+    }
+  },
+  {
+    "__docId__": 58,
+    "kind": "function",
+    "name": "successfulRequestsSelector",
+    "memberof": "src/selectors.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/selectors.js~successfulRequestsSelector",
+    "access": "public",
+    "export": true,
+    "importPath": "redux-endpoints/src/selectors.js",
+    "importStyle": "{successfulRequestsSelector}",
+    "description": "",
+    "lineNumber": 55,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "state",
+        "description": "A piece of state attached to one url."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "boolean"
+      ],
+      "spread": false,
+      "description": "totalRequests How many successful requests have been made to this url. A successful request is a request whose Promise is not rejected."
+    }
+  },
+  {
+    "__docId__": 59,
     "kind": "file",
     "name": "src/utils.js",
-    "content": "/**\n * @private\n */\nexport const camelCase = spinal => (\n  spinal.split('-').map((s, i) =>\n    i !== 0\n      ? (s[0].toUpperCase() + s.slice(1, s.length))\n      : s\n  ).join('')\n);\n\n/**\n * @private\n */\nexport const actionTypeCase = spinal => (\n  spinal.replace('-', '_').toUpperCase()\n);\n\n/**\n * @return {Object} initalEndpointState\n * Initial state for a branch of the state managed by an endpoint.\n */\nexport const initialEndpointState = () => ({\n  data: null,\n  error: null,\n  pendingRequests: 0,\n  successfulRequests: 0,\n  totalRequests: 0,\n});\n",
+    "content": "/**\n * @private\n */\nexport const camelCase = spinal => (\n  spinal.split('-').map((s, i) =>\n    i !== 0\n      ? (s[0].toUpperCase() + s.slice(1, s.length))\n      : s\n  ).join('')\n);\n\n/**\n * @private\n */\nexport const actionTypeCase = spinal => (\n  spinal.replace(new RegExp('-', 'g'), '_').toUpperCase()\n);\n\n/**\n * @return {Object} initalEndpointState\n * Initial state for a branch of the state managed by an endpoint.\n */\nexport const initialEndpointState = () => ({\n  data: null,\n  error: null,\n  pendingRequests: 0,\n  successfulRequests: 0,\n  totalRequests: 0,\n});\n\n/**\n * @private\n */\nexport const compose = (...funcs) => data => (\n  funcs.reduceRight((v, f) => f(v), data)\n);\n",
     "static": true,
     "longname": "/Users/207008/Repos/redux-endpoints/src/utils.js",
     "access": "public",
@@ -918,7 +1000,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 58,
+    "__docId__": 60,
     "kind": "function",
     "name": "camelCase",
     "memberof": "src/utils.js",
@@ -943,7 +1025,7 @@
     "return": null
   },
   {
-    "__docId__": 59,
+    "__docId__": 61,
     "kind": "function",
     "name": "actionTypeCase",
     "memberof": "src/utils.js",
@@ -968,7 +1050,7 @@
     "return": null
   },
   {
-    "__docId__": 60,
+    "__docId__": 62,
     "kind": "function",
     "name": "initialEndpointState",
     "memberof": "src/utils.js",
@@ -993,8 +1075,34 @@
     "params": []
   },
   {
+    "__docId__": 63,
+    "kind": "function",
+    "name": "compose",
+    "memberof": "src/utils.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/utils.js~compose",
+    "access": "private",
+    "export": true,
+    "importPath": "redux-endpoints/src/utils.js",
+    "importStyle": "{compose}",
+    "description": "",
+    "lineNumber": 34,
+    "params": [
+      {
+        "name": "funcs",
+        "types": [
+          "...*"
+        ],
+        "spread": true
+      }
+    ],
+    "return": null
+  },
+  {
     "kind": "index",
-    "content": "# redux-endpoints\n> Define Redux modules for fetching data from API endpoints\n\n![Build status](https://travis-ci.org/dylanonelson/redux-endpoints.svg?branch=master)\n\n## Motivation\nI found myself writing a lot of boilerplate code every time I wanted to fetch data and ingest it into my Redux store. First, I would define some actions for requesting and ingesting the data. Then I would define a reducer to process those actions. Then I would define some middleware or a saga to intercept the \"request\" action and fire off the \"ingest\" one once the API call was complete. Establishing all the cross references and integrating the module into my Redux setup was tedious and error prone. More importantly, I quickly realized that for simple cases I was doing the exact same thing every time, with minor variations caused only by slips of memory or spells of laziness. I made redux-endpoints as a way to truly standardize this type of module definition.\n\n## Example\n```js\n// src/redux-modules/resourceApi/index.js\nimport { createEndpoint } from 'redux-endpoints';\n\nconst ep = createEndpoint({\n  // Must be spinal case\n  name: 'resource-api',\n  // Receives the url as a parameter and must return a promise\n  request: url => new Promise((resolve, reject) => (\n    fetch(url, { credentials: 'include' })\n      .then(resp => resp.json())\n      .then(json => resolve(json))\n  )),\n  // Receives the url params as arguments and returns the key in the state\n  // where the request data will be stored\n  resolver: id => id,\n  // Url pattern for requests\n  url: '/api/resource/:id',\n});\n\nconst {\n  actionCreators,\n  actionTypes,\n  middleware,\n  selector,\n  reducer,\n} = ep;\n\nexport {\n  actionCreators,\n  actionTypes,\n  middleware,\n  selector,\n};\n\nexport default reducer;\n```\n\n```js\n// src/redux-store/index.js\nimport { applyMiddleware, createStore } from 'redux';\n\nimport endpointReducer, { middleware } from 'redux-modules/resourceApi';\n\nconst middleware = applyMiddleware(\n  middleware,\n);\n\nconst reducer = combineReducers({\n  resourceApi: endpointReducer,\n});\n\nconst store = createStore(reducer, {}, middleware);\n```\n\n```js\n// whereveryouwant.js\nimport store from 'redux-store';\n\nimport { actionCreators } from 'redux-modules/resourceApi';\n\nstore.dispatch(actionCreators.request(1));\n```\n\nThe code above triggers:\n1. An action, `resourceApi/MAKE_RESOURCE_API_REQUEST`,\n1. A fetch to the url `/api/resource/1`, and\n1. An action, `resourceApi/INGEST_RESOURCE_API_RESPONSE`.\n\nAt the end of the whole thing, the `resourceApi` branch of your state will look as follows:\n```json\n{\n  \"1\": {\n    \"pendingRequests\": 0,\n    \"data\": {\n      \"id\": 1,\n      \"server_attribute\": \"server_value\"\n    }\n  }\n}\n```\n\nIf something went wrong with your request and the Promise were rejected, the `resourceApi` branch of your state would look as follows:\n```json\n{\n  \"1\": {\n    \"pendingRequests\": 0,\n    \"data\": null,\n    \"error\": {\n      \"message\": \"Something went wrong with the request\",\n      \"name\": \"Error\"\n    }\n  }\n}\n```\n",
+    "content": "# redux-endpoints\n> Define Redux modules for fetching data from API endpoints\n\n![Build status](https://travis-ci.org/dylanonelson/redux-endpoints.svg?branch=master)\n\n## Motivation\nI found myself writing a lot of boilerplate code every time I wanted to fetch data and ingest it into my Redux store. First, I would define some actions for requesting and ingesting the data. Then I would define a reducer to process those actions. Then I would define some middleware or a saga to intercept the \"request\" action and fire off the \"ingest\" one once the API call was complete. Establishing all the cross references and integrating the module into my Redux setup was tedious and error prone. More importantly, I quickly realized that for simple cases I was doing the exact same thing every time, with minor variations caused only by slips of memory or spells of laziness. I made redux-endpoints as a way to truly standardize this type of module definition.\n\n## Documentation\nYou can [read the docs](https://dylanonelson.github.io/redux-endpoints/) for the master branch on GitHub pages.\n\n## Example\n```js\n// src/redux-modules/resourceApi/index.js\nimport { createEndpoint } from 'redux-endpoints';\n\nconst endpoint = createEndpoint({\n  // Must be spinal case (required)\n  name: 'resource-api',\n  // Receives the url as a parameter and must return a promise (required)\n  request: url => new Promise((resolve, reject) => (\n    fetch(url, { credentials: 'include' })\n      .then(resp => resp.json())\n      .then(json => resolve(json))\n  )),\n  // Receives the url params as arguments and returns the key in the state (optional)\n  // where the request data will be stored\n  resolver: id => id,\n  // Where in the root-level state the selector function should look for request\n  // data (optional)\n  rootSelector: state => state.resourceApi,\n  // Url pattern for requests (required)\n  url: '/api/resource/:id',\n});\n\nconst {\n  actionCreators,\n  middleware,\n  selector,\n  reducer,\n} = endpoints;\n\nexport {\n  actionCreators,\n  middleware,\n  selector,\n};\n\nexport default reducer;\n```\n\n```js\n// src/redux-store/index.js\nimport { applyMiddleware, createStore } from 'redux';\n\nimport endpointReducer, { middleware } from 'redux-modules/resourceApi';\n\nconst middleware = applyMiddleware(\n  middleware,\n);\n\nconst reducer = combineReducers({\n  resourceApi: endpointReducer,\n});\n\nconst store = createStore(reducer, {}, middleware);\n```\n\n```js\n// whereveryouwant.js\nimport store from 'redux-store';\n\nimport { actionCreators } from 'redux-modules/resourceApi';\n\nstore.dispatch(actionCreators.request(1));\n```\n\nThe code above triggers:\n1. An action, `resourceApi/MAKE_RESOURCE_API_REQUEST`,\n1. A fetch to the url `/api/resource/1`, and\n1. An action, `resourceApi/INGEST_RESOURCE_API_RESPONSE`.\n\nAt the end of the whole thing, your state will look as follows:\n```js\n{\n  resourceApi: {\n    \"1\": {\n      pendingRequests: 0,\n      totalRequests: 1,\n      successfulRequests: 1,\n      data: {\n        id: 1,\n        server_attribute: \"server_value\"\n      }\n    }\n  }\n}\n```\n\nIf something went wrong with your request and the Promise were rejected, your state would look as follows:\n```js\n{\n  resourceApi: {\n    \"1\": {\n      pendingRequests: 0,\n      totalRequests: 1,\n      successfulRequests: 0,\n      data: null,\n      error: {\n        message: \"Something went wrong with the request\",\n        name: \"Error\"\n      }\n    }\n  }\n}\n```\n\n## Options\n\n### `name`\nRequired. The name of this endpoint. Must be provided in spinal case.\n\n### `request`\nRequired. A function that returns a Promise. The `request` function is called by the endpoint's middleware (`endpoint.middleware`) when the `request` action is fired (`endpoint.actionCreators.request`). It takes two arguments:\n\n1. The url to request\n1. Any further options passed to the `request` action creator\n\nThe data that the Promise resolves (or rejects) with will be passed to the `ingest` action creator (`endpoint.actionCreators.ingest`) and incorporated into the store at the path determined by the `resolver` option (see below). Data the Promise resolves with is stored under the `'data'` key; data the Promise rejects with is stored under the `'error'` key.\n\n### `url`\nRequired. A string. Optionally has colon-prefixed url parameters.\n\n### `resolver`\nOptional. A function that takes as its arguments the colon-prefixed url parameters in the `url` option. Should return the key where the endpoint's data will be stored.\n\nDefaults to a function which returns a default string (`'__default__'`).\n\nE.g. in the code above, requesting data with `endpoint.actionCreators.request(1000)` would result in the data stored under they key `'1000'` by the reducer.\n\n### `rootSelector`\nOptional. A function that takes the state as its sole parameter and returns the branch of the state the endpoint’s reducer (`endpoint.reducer`) is responsible for. So if you call `combineReducers({ my_key: endpoint.reducer })`, your `rootSelector` would be `(state => state.my_key)`. It’s called by the `selector` function when retrieving request data from the top-level state. Defaults to `(state => state)`.\n\n## Methods\n\n### `endpoint.reducer`\n\nA reducer to manage the slice of state where you choose to store your data from this url.\n\n### `endpoint.middleware`\n\nA redux middleware function. Pass it into your `createStore` call to enable the `request` action creator to trigger your data requests.\n\n### `endpoint.actionCreators`\n\nAction creators for this endpoint. See below.\n\n#### `endpoint.actionCreators.request`\n\nCreates an `request` action. The action type is named and namespaced according to the `name` of your endpoint. E.g. in the code above, `resourceApi/MAKE_RESOURCE_API_REQUEST`. Takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. E.g. in the code above:\n\n```javascript\nconst id = 1000;\ndispatch(actionCreators.request(id));\n```\n\nThe `request` action creator's `toString` method returns its action type.\n\n#### `endpoint.actionCreators.ingest`\nCreates an ingest action. This action creator is called by the middleware once your endpoint's `request` Promise resolves or rejects. The ingest action creator is primarily for internal use, but it is exported because its `toString` method returns its action type.\n\n### `endpoint.selector`\nA selector for retrieving request data. Its first argument is the state. In analogy to the `resolver` function, it takes as its remaining arguments the colon-prefixed url parameters in the `url` of your endpoint. The `selector` function calls the `rootSelector`, if one is provided, and then the `resolver` to determine which piece of state you want. E.g. in the code above:\n\n```javascript\n// Retrieve endpoint data for url /api/resource/1000\nconst endpointData = selector(state, 1000);\n```\n",
     "longname": "/Users/207008/Repos/redux-endpoints/README.md",
     "name": "./README.md",
     "static": true,
@@ -1002,7 +1110,7 @@
   },
   {
     "kind": "packageJSON",
-    "content": "{\n  \"version\": \"0.5.0\",\n  \"main\": \"dist/index.bundle.js\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/dylanonelson/redux-endpoints\"\n  },\n  \"keywords\": [\n    \"actions\",\n    \"fsa\",\n    \"redux modules\",\n    \"redux\"\n  ],\n  \"scripts\": {\n    \"build\": \"webpack --colors --progress\",\n    \"posttest\": \"npm run build\",\n    \"test\": \"jest --coverage\",\n    \"test:watch\": \"jest --coverage --watch\"\n  },\n  \"author\": \"Dylan Nelson\",\n  \"license\": \"ISC\",\n  \"name\": \"redux-endpoints\",\n  \"description\": \"Redux modules for API endpoints\",\n  \"devDependencies\": {\n    \"babel-core\": \"^6.25.0\",\n    \"babel-eslint\": \"^7.2.3\",\n    \"babel-loader\": \"^7.1.1\",\n    \"babel-plugin-transform-decorators-legacy\": \"^1.3.4\",\n    \"babel-preset-latest\": \"^6.24.1\",\n    \"babel-preset-react\": \"^6.24.1\",\n    \"chai\": \"^4.1.0\",\n    \"css-loader\": \"^0.28.4\",\n    \"esdoc\": \"^1.0.2\",\n    \"esdoc-standard-plugin\": \"^1.0.0\",\n    \"eslint\": \"^4.3.0\",\n    \"eslint-loader\": \"^1.9.0\",\n    \"eslint-plugin-react\": \"^7.1.0\",\n    \"express\": \"^4.15.3\",\n    \"fetch-everywhere\": \"^1.0.5\",\n    \"fetch-mock\": \"^5.12.1\",\n    \"file-loader\": \"^0.11.2\",\n    \"jest\": \"^20.0.4\",\n    \"mocha\": \"^3.4.2\",\n    \"node-fetch\": \"^1.7.1\",\n    \"prop-types\": \"^15.5.10\",\n    \"redux\": \"^3.7.2\",\n    \"redux-mock-store\": \"^1.2.3\",\n    \"style-loader\": \"^0.18.2\",\n    \"url-parse\": \"^1.1.9\",\n    \"webpack\": \"^3.4.0\",\n    \"webpack-dev-server\": \"^2.6.1\"\n  }\n}\n",
+    "content": "{\n  \"version\": \"0.9.0\",\n  \"main\": \"dist/index.bundle.js\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/dylanonelson/redux-endpoints\"\n  },\n  \"keywords\": [\n    \"actions\",\n    \"fsa\",\n    \"redux modules\",\n    \"redux\"\n  ],\n  \"scripts\": {\n    \"build\": \"webpack --colors --progress\",\n    \"posttest\": \"npm run build\",\n    \"test\": \"jest --coverage\",\n    \"test:watch\": \"jest --coverage --watch\"\n  },\n  \"author\": \"Dylan Nelson\",\n  \"license\": \"ISC\",\n  \"name\": \"redux-endpoints\",\n  \"description\": \"Redux modules for API endpoints\",\n  \"devDependencies\": {\n    \"babel-core\": \"^6.25.0\",\n    \"babel-eslint\": \"^7.2.3\",\n    \"babel-loader\": \"^7.1.1\",\n    \"babel-plugin-transform-decorators-legacy\": \"^1.3.4\",\n    \"babel-preset-latest\": \"^6.24.1\",\n    \"babel-preset-react\": \"^6.24.1\",\n    \"chai\": \"^4.1.0\",\n    \"css-loader\": \"^0.28.4\",\n    \"esdoc\": \"^1.0.2\",\n    \"esdoc-standard-plugin\": \"^1.0.0\",\n    \"eslint\": \"^4.3.0\",\n    \"eslint-loader\": \"^1.9.0\",\n    \"eslint-plugin-react\": \"^7.1.0\",\n    \"express\": \"^4.15.3\",\n    \"fetch-everywhere\": \"^1.0.5\",\n    \"fetch-mock\": \"^5.12.1\",\n    \"file-loader\": \"^0.11.2\",\n    \"jest\": \"^20.0.4\",\n    \"mocha\": \"^3.4.2\",\n    \"node-fetch\": \"^1.7.1\",\n    \"prop-types\": \"^15.5.10\",\n    \"redux\": \"^3.7.2\",\n    \"redux-mock-store\": \"^1.2.3\",\n    \"style-loader\": \"^0.18.2\",\n    \"url-parse\": \"^1.1.9\",\n    \"webpack\": \"^3.4.0\",\n    \"webpack-dev-server\": \"^2.6.1\"\n  }\n}\n",
     "longname": "/Users/207008/Repos/redux-endpoints/package.json",
     "name": "package.json",
     "static": true,

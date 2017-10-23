@@ -33,8 +33,11 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-dataSelector">dataSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-errorSelector">errorSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isPendingSelector">isPendingSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-successfulRequestsSelector">successfulRequestsSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-totalRequestsSelector">totalRequestsSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-actionTypeCase">actionTypeCase</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-camelCase">camelCase</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-compose">compose</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initialEndpointState">initialEndpointState</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULT_KEY">DEFAULT_KEY</a></span></span></li>
 </ul>
@@ -46,36 +49,38 @@
 </blockquote>
 <p><img src="https://travis-ci.org/dylanonelson/redux-endpoints.svg?branch=master" alt="Build status"></p>
 <h2 id="motivation">Motivation</h2><p>I found myself writing a lot of boilerplate code every time I wanted to fetch data and ingest it into my Redux store. First, I would define some actions for requesting and ingesting the data. Then I would define a reducer to process those actions. Then I would define some middleware or a saga to intercept the &quot;request&quot; action and fire off the &quot;ingest&quot; one once the API call was complete. Establishing all the cross references and integrating the module into my Redux setup was tedious and error prone. More importantly, I quickly realized that for simple cases I was doing the exact same thing every time, with minor variations caused only by slips of memory or spells of laziness. I made redux-endpoints as a way to truly standardize this type of module definition.</p>
+<h2 id="documentation">Documentation</h2><p>You can <a href="https://dylanonelson.github.io/redux-endpoints/">read the docs</a> for the master branch on GitHub pages.</p>
 <h2 id="example">Example</h2><pre><code class="lang-js"><code class="source-code prettyprint">// src/redux-modules/resourceApi/index.js
 import { createEndpoint } from &apos;redux-endpoints&apos;;
 
-const ep = createEndpoint({
-  // Must be spinal case
+const endpoint = createEndpoint({
+  // Must be spinal case (required)
   name: &apos;resource-api&apos;,
-  // Receives the url as a parameter and must return a promise
+  // Receives the url as a parameter and must return a promise (required)
   request: url =&gt; new Promise((resolve, reject) =&gt; (
     fetch(url, { credentials: &apos;include&apos; })
       .then(resp =&gt; resp.json())
       .then(json =&gt; resolve(json))
   )),
-  // Receives the url params as arguments and returns the key in the state
+  // Receives the url params as arguments and returns the key in the state (optional)
   // where the request data will be stored
   resolver: id =&gt; id,
-  // Url pattern for requests
+  // Where in the root-level state the selector function should look for request
+  // data (optional)
+  rootSelector: state =&gt; state.resourceApi,
+  // Url pattern for requests (required)
   url: &apos;/api/resource/:id&apos;,
 });
 
 const {
   actionCreators,
-  actionTypes,
   middleware,
   selector,
   reducer,
-} = ep;
+} = endpoints;
 
 export {
   actionCreators,
-  actionTypes,
   middleware,
   selector,
 };
@@ -110,28 +115,61 @@ store.dispatch(actionCreators.request(1));</code>
 <li>A fetch to the url <code>/api/resource/1</code>, and</li>
 <li>An action, <code>resourceApi/INGEST_RESOURCE_API_RESPONSE</code>.</li>
 </ol>
-<p>At the end of the whole thing, the <code>resourceApi</code> branch of your state will look as follows:</p>
-<pre><code class="lang-json"><code class="source-code prettyprint">{
-  &quot;1&quot;: {
-    &quot;pendingRequests&quot;: 0,
-    &quot;data&quot;: {
-      &quot;id&quot;: 1,
-      &quot;server_attribute&quot;: &quot;server_value&quot;
+<p>At the end of the whole thing, your state will look as follows:</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">{
+  resourceApi: {
+    &quot;1&quot;: {
+      pendingRequests: 0,
+      totalRequests: 1,
+      successfulRequests: 1,
+      data: {
+        id: 1,
+        server_attribute: &quot;server_value&quot;
+      }
     }
   }
 }</code>
 </code></pre>
-<p>If something went wrong with your request and the Promise were rejected, the <code>resourceApi</code> branch of your state would look as follows:</p>
-<pre><code class="lang-json"><code class="source-code prettyprint">{
-  &quot;1&quot;: {
-    &quot;pendingRequests&quot;: 0,
-    &quot;data&quot;: null,
-    &quot;error&quot;: {
-      &quot;message&quot;: &quot;Something went wrong with the request&quot;,
-      &quot;name&quot;: &quot;Error&quot;
+<p>If something went wrong with your request and the Promise were rejected, your state would look as follows:</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">{
+  resourceApi: {
+    &quot;1&quot;: {
+      pendingRequests: 0,
+      totalRequests: 1,
+      successfulRequests: 0,
+      data: null,
+      error: {
+        message: &quot;Something went wrong with the request&quot;,
+        name: &quot;Error&quot;
+      }
     }
   }
 }</code>
+</code></pre>
+<h2 id="options">Options</h2><h3 id="-code-name--code-"><code>name</code></h3><p>Required. The name of this endpoint. Must be provided in spinal case.</p>
+<h3 id="-code-request--code-"><code>request</code></h3><p>Required. A function that returns a Promise. The <code>request</code> function is called by the endpoint&apos;s middleware (<code>endpoint.middleware</code>) when the <code>request</code> action is fired (<code>endpoint.actionCreators.request</code>). It takes two arguments:</p>
+<ol>
+<li>The url to request</li>
+<li>Any further options passed to the <code>request</code> action creator</li>
+</ol>
+<p>The data that the Promise resolves (or rejects) with will be passed to the <code>ingest</code> action creator (<code>endpoint.actionCreators.ingest</code>) and incorporated into the store at the path determined by the <code>resolver</code> option (see below). Data the Promise resolves with is stored under the <code>&apos;data&apos;</code> key; data the Promise rejects with is stored under the <code>&apos;error&apos;</code> key.</p>
+<h3 id="-code-url--code-"><code>url</code></h3><p>Required. A string. Optionally has colon-prefixed url parameters.</p>
+<h3 id="-code-resolver--code-"><code>resolver</code></h3><p>Optional. A function that takes as its arguments the colon-prefixed url parameters in the <code>url</code> option. Should return the key where the endpoint&apos;s data will be stored.</p>
+<p>Defaults to a function which returns a default string (<code>&apos;__default__&apos;</code>).</p>
+<p>E.g. in the code above, requesting data with <code>endpoint.actionCreators.request(1000)</code> would result in the data stored under they key <code>&apos;1000&apos;</code> by the reducer.</p>
+<h3 id="-code-rootselector--code-"><code>rootSelector</code></h3><p>Optional. A function that takes the state as its sole parameter and returns the branch of the state the endpoint&#x2019;s reducer (<code>endpoint.reducer</code>) is responsible for. So if you call <code>combineReducers({ my_key: endpoint.reducer })</code>, your <code>rootSelector</code> would be <code>(state =&gt; state.my_key)</code>. It&#x2019;s called by the <code>selector</code> function when retrieving request data from the top-level state. Defaults to <code>(state =&gt; state)</code>.</p>
+<h2 id="methods">Methods</h2><h3 id="-code-endpoint-reducer--code-"><code>endpoint.reducer</code></h3><p>A reducer to manage the slice of state where you choose to store your data from this url.</p>
+<h3 id="-code-endpoint-middleware--code-"><code>endpoint.middleware</code></h3><p>A redux middleware function. Pass it into your <code>createStore</code> call to enable the <code>request</code> action creator to trigger your data requests.</p>
+<h3 id="-code-endpoint-actioncreators--code-"><code>endpoint.actionCreators</code></h3><p>Action creators for this endpoint. See below.</p>
+<h4 id="-code-endpoint-actioncreators-request--code-"><code>endpoint.actionCreators.request</code></h4><p>Creates an <code>request</code> action. The action type is named and namespaced according to the <code>name</code> of your endpoint. E.g. in the code above, <code>resourceApi/MAKE_RESOURCE_API_REQUEST</code>. Takes as its arguments the colon-prefixed url parameters in the <code>url</code> of your endpoint. E.g. in the code above:</p>
+<pre><code class="lang-javascript"><code class="source-code prettyprint">const id = 1000;
+dispatch(actionCreators.request(id));</code>
+</code></pre>
+<p>The <code>request</code> action creator&apos;s <code>toString</code> method returns its action type.</p>
+<h4 id="-code-endpoint-actioncreators-ingest--code-"><code>endpoint.actionCreators.ingest</code></h4><p>Creates an ingest action. This action creator is called by the middleware once your endpoint&apos;s <code>request</code> Promise resolves or rejects. The ingest action creator is primarily for internal use, but it is exported because its <code>toString</code> method returns its action type.</p>
+<h3 id="-code-endpoint-selector--code-"><code>endpoint.selector</code></h3><p>A selector for retrieving request data. Its first argument is the state. In analogy to the <code>resolver</code> function, it takes as its remaining arguments the colon-prefixed url parameters in the <code>url</code> of your endpoint. The <code>selector</code> function calls the <code>rootSelector</code>, if one is provided, and then the <code>resolver</code> to determine which piece of state you want. E.g. in the code above:</p>
+<pre><code class="lang-javascript"><code class="source-code prettyprint">// Retrieve endpoint data for url /api/resource/1000
+const endpointData = selector(state, 1000);</code>
 </code></pre>
 </div>
 </div>

@@ -18,6 +18,12 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
+    "redux-endpoints/src/utils.js~compose",
+    "function/index.html#static-function-compose",
+    "<span>compose</span> <span class=\"search-result-import-path\">redux-endpoints/src/utils.js</span>",
+    "function"
+  ],
+  [
     "redux-endpoints/src/index.js~createendpoint",
     "function/index.html#static-function-createEndpoint",
     "<span>createEndpoint</span> <span class=\"search-result-import-path\">redux-endpoints/src/index.js</span>",
@@ -45,6 +51,18 @@ window.esdocSearchIndex = [
     "redux-endpoints/src/selectors.js~ispendingselector",
     "function/index.html#static-function-isPendingSelector",
     "<span>isPendingSelector</span> <span class=\"search-result-import-path\">redux-endpoints/src/selectors.js</span>",
+    "function"
+  ],
+  [
+    "redux-endpoints/src/selectors.js~successfulrequestsselector",
+    "function/index.html#static-function-successfulRequestsSelector",
+    "<span>successfulRequestsSelector</span> <span class=\"search-result-import-path\">redux-endpoints/src/selectors.js</span>",
+    "function"
+  ],
+  [
+    "redux-endpoints/src/selectors.js~totalrequestsselector",
+    "function/index.html#static-function-totalRequestsSelector",
+    "<span>totalRequestsSelector</span> <span class=\"search-result-import-path\">redux-endpoints/src/selectors.js</span>",
     "function"
   ],
   [

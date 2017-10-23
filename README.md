@@ -15,18 +15,21 @@ You can [read the docs](https://dylanonelson.github.io/redux-endpoints/) for the
 import { createEndpoint } from 'redux-endpoints';
 
 const endpoint = createEndpoint({
-  // Must be spinal case
+  // Must be spinal case (required)
   name: 'resource-api',
-  // Receives the url as a parameter and must return a promise
+  // Receives the url as a parameter and must return a promise (required)
   request: url => new Promise((resolve, reject) => (
     fetch(url, { credentials: 'include' })
       .then(resp => resp.json())
       .then(json => resolve(json))
   )),
-  // Receives the url params as arguments and returns the key in the state
+  // Receives the url params as arguments and returns the key in the state (optional)
   // where the request data will be stored
   resolver: id => id,
-  // Url pattern for requests
+  // Where in the root-level state the selector function should look for request
+  // data (optional)
+  rootSelector: state => state.resourceApi,
+  // Url pattern for requests (required)
   url: '/api/resource/:id',
 });
 
@@ -77,32 +80,36 @@ The code above triggers:
 1. A fetch to the url `/api/resource/1`, and
 1. An action, `resourceApi/INGEST_RESOURCE_API_RESPONSE`.
 
-At the end of the whole thing, the `resourceApi` branch of your state will look as follows:
-```json
+At the end of the whole thing, your state will look as follows:
+```js
 {
-  "1": {
-    "pendingRequests": 0,
-    "totalRequests": 1,
-    "successfulRequests": 1,
-    "data": {
-      "id": 1,
-      "server_attribute": "server_value"
+  resourceApi: {
+    "1": {
+      pendingRequests: 0,
+      totalRequests: 1,
+      successfulRequests: 1,
+      data: {
+        id: 1,
+        server_attribute: "server_value"
+      }
     }
   }
 }
 ```
 
-If something went wrong with your request and the Promise were rejected, the `resourceApi` branch of your state would look as follows:
-```json
+If something went wrong with your request and the Promise were rejected, your state would look as follows:
+```js
 {
-  "1": {
-    "pendingRequests": 0,
-    "totalRequests": 1,
-    "successfulRequests": 0,
-    "data": null,
-    "error": {
-      "message": "Something went wrong with the request",
-      "name": "Error"
+  resourceApi: {
+    "1": {
+      pendingRequests: 0,
+      totalRequests: 1,
+      successfulRequests: 0,
+      data: null,
+      error: {
+        message: "Something went wrong with the request",
+        name: "Error"
+      }
     }
   }
 }
@@ -130,6 +137,9 @@ Optional. A function that takes as its arguments the colon-prefixed url paramete
 Defaults to a function which returns a default string (`'__default__'`).
 
 E.g. in the code above, requesting data with `endpoint.actionCreators.request(1000)` would result in the data stored under they key `'1000'` by the reducer.
+
+### `rootSelector`
+Optional. A function that takes the state as its sole parameter and returns the branch of the state the endpoint’s reducer (`endpoint.reducer`) is responsible for. So if you call `combineReducers({ my_key: endpoint.reducer })`, your `rootSelector` would be `(state => state.my_key)`. It’s called by the `selector` function when retrieving request data from the top-level state. Defaults to `(state => state)`.
 
 ## Methods
 
@@ -160,11 +170,9 @@ The `request` action creator's `toString` method returns its action type.
 Creates an ingest action. This action creator is called by the middleware once your endpoint's `request` Promise resolves or rejects. The ingest action creator is primarily for internal use, but it is exported because its `toString` method returns its action type.
 
 ### `endpoint.selector`
-A function to create selectors. Just like the `resolver` function, it takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. The `selector` function calls the `resolver` to determine which piece of state you want. E.g. in the code above:
+A selector for retrieving request data. Its first argument is the state. In analogy to the `resolver` function, it takes as its remaining arguments the colon-prefixed url parameters in the `url` of your endpoint. The `selector` function calls the `rootSelector`, if one is provided, and then the `resolver` to determine which piece of state you want. E.g. in the code above:
 
 ```javascript
 // Retrieve endpoint data for url /api/resource/1000
-const endpointData = selector(1000)(state);
+const endpointData = selector(state, 1000);
 ```
-
-It returns a selector that takes as its argument the piece of state managed by the endpoint's reducer (`endpoint.reducer`).

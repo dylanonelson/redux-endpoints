@@ -33,8 +33,11 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-dataSelector">dataSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-errorSelector">errorSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isPendingSelector">isPendingSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-successfulRequestsSelector">successfulRequestsSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-totalRequestsSelector">totalRequestsSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-actionTypeCase">actionTypeCase</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-camelCase">camelCase</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-compose">compose</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initialEndpointState">initialEndpointState</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULT_KEY">DEFAULT_KEY</a></span></span></li>
 </ul>
@@ -45,12 +48,14 @@
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import URL from &apos;url-parse&apos;;
 
 import { DEFAULT_KEY } from &apos;./constants&apos;;
-import { camelCase, actionTypeCase, initialEndpointState } from &apos;./utils&apos;;
+import { camelCase, compose, actionTypeCase, initialEndpointState } from &apos;./utils&apos;;
 
 export {
   dataSelector,
   errorSelector,
   isPendingSelector,
+  successfulRequestsSelector,
+  totalRequestsSelector,
 } from &apos;./selectors&apos;;
 
 export { initialEndpointState };
@@ -74,6 +79,11 @@ const defaultResolver = () =&gt; DEFAULT_KEY;
  * @param {?function} options.resolver
  * Takes as its arguments the url parameters denoted in options.url with colors.
  * Takes as its last, optional argument an options object.
+ * @param {?function} options.rootSelector
+ * A selector that takes the state as its parameter and returns the root
+ * location of the endpoint&#x2019;s state. Defaults to `(state =&gt; state)`. The
+ * `rootSelector` argument is called by the `selector` function to compute the
+ * piece of state to select from.
  *
  * @return {Object} endpoint
  * @property {Object} actionCreators
@@ -85,10 +95,10 @@ const defaultResolver = () =&gt; DEFAULT_KEY;
  * E.g. `&apos;/myapi/content/:id&apos;` results in a request action creator that takes
  * one argument, the `id` parameter. In addition, takes as its last, optional
  * argument an options object to pass in turn to the options.request function.
- * @property {function} selector Takes the same arguments as the passed
- * resolver. If no resolver is supplied, it receives no arguments. Returns a
- * selector that takes the root piece of state where this endpoint&apos;s data is
- * stored and returns the piece of state for the url that the arguments resolve to.
+ * @property {function} selector Takes as its first argument the state. As its
+ * remaining arguments it takes the same arguments as the passed resolver. If no
+ * resolver is supplied, it receives no arguments. Returns the piece of state
+ * for the url that the resolver arguments resolve to.
  * @property {function} reducer Redux reducer.
  * @property {function} middleware Redux middleware.
  */
@@ -97,6 +107,7 @@ export const createEndpoint = ({
   request,
   url,
   resolver = defaultResolver,
+  rootSelector,
 }) =&gt; {
   const actionTypeCaseName = actionTypeCase(name);
   const camelCaseName = camelCase(name);
@@ -105,6 +116,8 @@ export const createEndpoint = ({
   // Thanks, Jeremy
   const namedParam = /(\(\?)?:\w+/g;
   const urlParams = [];
+
+  rootSelector = rootSelector || (state =&gt; state);
 
   let match = true;
 
@@ -209,8 +222,14 @@ export const createEndpoint = ({
       nextState[path] = nextPathState;
 
       if (action.error) {
-        const { message, name } = action.payload;
-        nextPathState.error = { message, name }
+        const { payload } = action;
+        const { message, name, stack } = payload;
+        nextPathState.error = { message, name, stack }
+        // Transfer custom properties as well
+        Object.keys(payload).forEach((key) =&gt; {
+          const value = payload[key];
+          nextPathState.error[key] = value;
+        });
       } else {
         nextPathState.data = action.payload;
         nextPathState.error = null;
@@ -237,18 +256,21 @@ export const createEndpoint = ({
 
   const selectorMap = {};
 
-  const selector = (...params) =&gt; {
+  const selector = (state, ...params) =&gt; {
     const path = resolver(...params);
     let s;
 
     if (!selectorMap[path]) {
-      s = state =&gt; (state[path] &amp;&amp; state[path]) || null;
+      s = state =&gt; (state &amp;&amp; state[path]) || null;
       selectorMap[path] = s;
     } else {
       s = selectorMap[path];
     }
 
-    return s;
+    return compose(
+      s,
+      rootSelector,
+    )(state);
   };
 
   return {

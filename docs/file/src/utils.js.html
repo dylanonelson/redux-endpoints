@@ -33,8 +33,11 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-dataSelector">dataSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-errorSelector">errorSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isPendingSelector">isPendingSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-successfulRequestsSelector">successfulRequestsSelector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-totalRequestsSelector">totalRequestsSelector</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-actionTypeCase">actionTypeCase</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-camelCase">camelCase</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-compose">compose</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initialEndpointState">initialEndpointState</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULT_KEY">DEFAULT_KEY</a></span></span></li>
 </ul>
@@ -57,7 +60,7 @@ export const camelCase = spinal =&gt; (
  * @private
  */
 export const actionTypeCase = spinal =&gt; (
-  spinal.replace(&apos;-&apos;, &apos;_&apos;).toUpperCase()
+  spinal.replace(new RegExp(&apos;-&apos;, &apos;g&apos;), &apos;_&apos;).toUpperCase()
 );
 
 /**
@@ -71,6 +74,13 @@ export const initialEndpointState = () =&gt; ({
   successfulRequests: 0,
   totalRequests: 0,
 });
+
+/**
+ * @private
+ */
+export const compose = (...funcs) =&gt; data =&gt; (
+  funcs.reduceRight((v, f) =&gt; f(v), data)
+);
 </code></pre>
 
 </div>
