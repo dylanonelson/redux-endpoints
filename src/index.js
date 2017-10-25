@@ -1,7 +1,7 @@
 import URL from 'url-parse';
 
 import { DEFAULT_KEY } from './constants';
-import { camelCase, compose, actionTypeCase, initialEndpointState } from './utils';
+import { camelCase, compose, initialEndpointState } from './utils';
 
 export {
   dataSelector,
