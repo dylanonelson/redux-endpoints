@@ -17,7 +17,7 @@ describe('An endpoint request action creator', () => {
   });
 
   test('has a `toString` method which returns the correct action type', () => {
-    const expected = 'mockApi/MAKE_MOCK_API_REQUEST';
+    const expected = 'mockApi/MAKE_REQUEST';
     assert.strictEqual(requestActionCreator.toString(), expected);
   });
 
@@ -28,7 +28,7 @@ describe('An endpoint request action creator', () => {
     });
 
     test('has a type derived from its name property', () => {
-      assert.strictEqual(requestAction.type, 'mockApi/MAKE_MOCK_API_REQUEST');
+      assert.strictEqual(requestAction.type, 'mockApi/MAKE_REQUEST');
     });
 
     test('has a payload containing the url', () => {
@@ -71,7 +71,7 @@ describe('An endpoint ingest action creator', () => {
   });
 
   test('has a `toString` method which returns the correct action type', () => {
-    const expected = 'mockApi/INGEST_MOCK_API_RESPONSE';
+    const expected = 'mockApi/INGEST_RESPONSE';
     assert.strictEqual(ingestActionCreator.toString(), expected);
   });
 
@@ -82,7 +82,7 @@ describe('An endpoint ingest action creator', () => {
     });
 
     test('has a type derived from its name property', () => {
-      assert.strictEqual(ingestAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
+      assert.strictEqual(ingestAction.type, 'mockApi/INGEST_RESPONSE');
     });
 
   });

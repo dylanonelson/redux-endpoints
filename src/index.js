@@ -62,7 +62,6 @@ export const createEndpoint = ({
   resolver = defaultResolver,
   rootSelector,
 }) => {
-  const actionTypeCaseName = actionTypeCase(name);
   const camelCaseName = camelCase(name);
 
   const parsedUrl = new URL(url);
@@ -80,10 +79,10 @@ export const createEndpoint = ({
   }
 
   const ingestActionType =
-    `${camelCaseName}/INGEST_${actionTypeCaseName}_RESPONSE`;
+    `${camelCaseName}/INGEST_RESPONSE`;
 
   const requestActionType =
-    `${camelCaseName}/MAKE_${actionTypeCaseName}_REQUEST`;
+    `${camelCaseName}/MAKE_REQUEST`;
 
   const ingestActionCreator = (payload, meta) => {
     return {
@@ -130,6 +129,8 @@ export const createEndpoint = ({
 
   const actionCreators = {
     ingest: ingestActionCreator,
+    ingestResponse: ingestActionCreator,
+    makeRequest: requestActionCreator,
     request: requestActionCreator,
   };
 

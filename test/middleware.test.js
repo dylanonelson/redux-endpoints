@@ -23,7 +23,7 @@ describe('Endpoint middleware', () => {
         assert.strictEqual(actions.length, 2);
 
         const secondAction = actions[1];
-        assert.strictEqual(secondAction.type, 'mockApi/INGEST_MOCK_API_RESPONSE');
+        assert.strictEqual(secondAction.type, 'mockApi/INGEST_RESPONSE');
         assert.deepEqual(secondAction.payload, { someJson: 'test' });
         resolve();
       });
