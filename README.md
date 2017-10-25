@@ -78,9 +78,9 @@ store.dispatch(actionCreators.request(1));
 ```
 
 The code above triggers:
-1. An action, `resourceApi/MAKE_RESOURCE_API_REQUEST`,
+1. An action, `resourceApi/MAKE_REQUEST`,
 1. A fetch to the url `/api/resource/1`, and
-1. An action, `resourceApi/INGEST_RESOURCE_API_RESPONSE`.
+1. An action, `resourceApi/INGEST_RESPONSE`.
 
 At the end of the whole thing, your state will look as follows:
 ```js
@@ -159,7 +159,7 @@ Action creators for this endpoint. See below.
 
 #### `endpoint.actionCreators.request`
 
-Creates an `request` action. The action type is named and namespaced according to the `name` of your endpoint. E.g. in the code above, `resourceApi/MAKE_RESOURCE_API_REQUEST`. Takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. E.g. in the code above:
+Creates an `request` action. The action type is named and namespaced according to the `name` of your endpoint. E.g. in the code above, `resourceApi/MAKE_REQUEST`. Takes as its arguments the colon-prefixed url parameters in the `url` of your endpoint. E.g. in the code above:
 
 ```javascript
 const id = 1000;
