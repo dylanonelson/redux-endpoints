@@ -1,17 +1,21 @@
 import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
 
-import { basicEndpoint } from './fixtures';
+import { createEndpointWithDefaults, getRequestAndIngestActions } from './fixtures';
 import { createEndpoint } from './context';
 
 describe('Endpoint middleware', () => {
 
-  let requestAction, store;
+  let endpoint, requestAction, store;
 
   beforeEach(() => {
-    const getStore = configMockStore([basicEndpoint.middleware]);
+    endpoint = createEndpointWithDefaults({
+      name: 'resource-api',
+      request: () => Promise.resolve('some_test_data'),
+    });
+    requestAction = endpoint.actionCreators.makeRequest(1776, { foo: 'bar' });
+    const getStore = configMockStore([endpoint.middleware]);
     store = getStore({});
-    requestAction = basicEndpoint.actionCreators.request(1776, { foo: 'bar' });
   });
 
   test('triggers an ingest action', () => {
@@ -23,8 +27,8 @@ describe('Endpoint middleware', () => {
         assert.strictEqual(actions.length, 2);
 
         const secondAction = actions[1];
-        assert.strictEqual(secondAction.type, 'mockApi/INGEST_RESPONSE');
-        assert.deepEqual(secondAction.payload, { someJson: 'test' });
+        assert.strictEqual(secondAction.type, 'resourceApi/INGEST_RESPONSE');
+        assert.strictEqual(secondAction.payload, 'some_test_data');
         resolve();
       });
     });
@@ -57,18 +61,12 @@ describe('Endpoint middleware', () => {
   });
 
   test('catches promises rejected with an error and creates an error ingest action', () => {
-    const getErrorEndpoint = () => createEndpoint({
-      name: 'test-api',
-      request: () => new Promise((resolve, reject) => {
-        reject(new Error('test'));
-      }),
-      url: 'http://localhost:1111/api/:id',
+    endpoint = createEndpointWithDefaults({
+      request: () => new Promise((resolve, reject) => reject(new Error('test'))),
     });
-
-    const ep = getErrorEndpoint();
-    const getStore = configMockStore([ep.middleware]);
+    const getStore = configMockStore([endpoint.middleware]);
     store = getStore({});
-    requestAction = ep.actionCreators.request();
+    requestAction = endpoint.actionCreators.request();
     store.dispatch(requestAction);
 
     return new Promise((resolve, reject) => {
@@ -83,18 +81,12 @@ describe('Endpoint middleware', () => {
   });
 
   test('catches promises rejected with non-Error values and creates an error ingest action', () => {
-    const getErrorEndpoint = () => createEndpoint({
-      name: 'test-api',
-      request: () => new Promise((resolve, reject) => {
-        reject('test');
-      }),
-      url: 'http://localhost:1111/api/:id',
+    endpoint = createEndpointWithDefaults({
+      request: () => new Promise((resolve, reject) => reject('test')),
     });
-
-    const ep = getErrorEndpoint();
-    const getStore = configMockStore([ep.middleware]);
+    const getStore = configMockStore([endpoint.middleware]);
     store = getStore({});
-    requestAction = ep.actionCreators.request();
+    requestAction = endpoint.actionCreators.request();
     store.dispatch(requestAction);
 
     return new Promise((resolve, reject) => {
@@ -107,5 +99,4 @@ describe('Endpoint middleware', () => {
       });
     });
   });
-
 });

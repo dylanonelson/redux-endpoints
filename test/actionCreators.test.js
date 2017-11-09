@@ -1,15 +1,20 @@
 import { assert } from 'chai';
 import resourceJson from './mock-api/json/resource.json';
 
-import { basicEndpoint } from './fixtures';
+import { createEndpointWithDefaults } from './fixtures';
 
 describe('An endpoint request action creator', () => {
 
-  let requestActionCreator, requestAction;
+  let endpoint, requestActionCreator, requestAction;
 
   beforeEach(() => {
-    requestActionCreator = basicEndpoint.actionCreators.request;
-    requestAction = basicEndpoint.actionCreators.request(1776, { foo: 'bar' });
+    endpoint = createEndpointWithDefaults({
+      name: 'mock-api',
+      url: 'http://localhost:1111/api/:id',
+      resolver: ({ id }) => id,
+    });
+    requestActionCreator = endpoint.actionCreators.request;
+    requestAction = endpoint.actionCreators.request({ id: 1776 }, { foo: 'bar' });
   });
 
   test('is a function', () => {
@@ -40,7 +45,7 @@ describe('An endpoint request action creator', () => {
     });
 
     test('defaults the options key of the payload to an empty object', () => {
-      requestAction = basicEndpoint.actionCreators.request(1776);
+      requestAction = endpoint.actionCreators.request(1776);
       assert.deepEqual(requestAction.payload.options, {});
     });
 
@@ -51,17 +56,21 @@ describe('An endpoint request action creator', () => {
     test('has a meta property containing a derived path', () => {
       assert.strictEqual(requestAction.meta.path, 1776);
     });
-
   });
-
 });
 
 describe('An endpoint ingest action creator', () => {
 
-  let ingestActionCreator, ingestPayload, ingestAction, requestMeta;
+  let endpoint, ingestActionCreator, ingestPayload, ingestAction, requestMeta;
 
   beforeEach(() => {
-    ingestActionCreator = basicEndpoint.actionCreators.ingest;
+    endpoint = createEndpointWithDefaults({
+      name: 'mock-api',
+      url: 'http://localhost:1111/api/:id',
+      resolver: ({ id }) => id,
+    });
+
+    ingestActionCreator = endpoint.actionCreators.ingest;
     ingestPayload = resourceJson;
     requestMeta = {
       params: { id: 1776 },
@@ -112,7 +121,7 @@ describe('An endpoint ingest action creator', () => {
   });
 
   test('sets the error property to false if the payload is not an error', () => {
+    const ingestAction = endpoint.actionCreators.ingestResponse({});
     assert.strictEqual(ingestAction.error, false);
   });
-
 });

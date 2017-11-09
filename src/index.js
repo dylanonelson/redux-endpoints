@@ -68,6 +68,7 @@ export const createEndpoint = ({
   // Thanks, Jeremy
   const namedParam = /(\(\?)?:\w+/g;
   const urlParams = [];
+  const urlParamsSansColon = [];
 
   rootSelector = rootSelector || (state => state);
 
@@ -75,7 +76,10 @@ export const createEndpoint = ({
 
   while (match) {
     match = namedParam.exec(parsedUrl.pathname);
-    if (match) urlParams.push(match[0]);
+    if (match) {
+      urlParamsSansColon.push(match[0].replace(/^:/, ''));
+      urlParams.push(match[0]);
+    }
   }
 
   const ingestActionType =
@@ -95,26 +99,17 @@ export const createEndpoint = ({
 
   ingestActionCreator.toString = () => ingestActionType;
 
-  const requestActionCreator = (...params) => {
-    let options = {}, reqUrl = url;
+  const requestActionCreator = (params = {}, options = {}) => {
+    let reqUrl = url;
 
-    urlParams.forEach((p, i) => {
-      reqUrl = reqUrl.replace(p, params[i]);
+    urlParamsSansColon.forEach(p => {
+      reqUrl = reqUrl.replace(`:${p}`, params[p]);
     });
-
-    if (typeof params[params.length - 1] === 'object') {
-      options = params[params.length - 1];
-    }
-
-    const metaParams = urlParams.reduce((memo, p, i) => {
-      memo[p.replace(':', '')] = params[i];
-      return memo;
-    }, {});
 
     return {
       meta: {
-        params: metaParams,
-        path: resolver(...params),
+        params,
+        path: resolver(params),
         url: reqUrl,
       },
       payload: {
@@ -210,8 +205,8 @@ export const createEndpoint = ({
 
   const selectorMap = {};
 
-  const selector = (state, ...params) => {
-    const path = resolver(...params);
+  const selector = (state, params) => {
+    const path = resolver(params);
     let s;
 
     if (!selectorMap[path]) {

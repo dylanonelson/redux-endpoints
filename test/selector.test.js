@@ -2,40 +2,11 @@ import { assert } from 'chai';
 
 import { createEndpoint } from './context';
 
-const getEndpointDefaults = () => ({
-  name: 'resource-api',
-  request: url => (
-    new Promise((resolve, reject) => {
-      fetch(url)
-        .then(resp => resp.json())
-        .then(json => resolve(json))
-        .catch(error => reject(error));
-    })
-  ),
-  url: 'http://localhost:1111/api/:id',
-});
-
-const getBasicEndpoint = () => createEndpoint(getEndpointDefaults());
-
-const getComplexResolverEndpoint = (cb) => createEndpoint(Object.assign(
-  {},
-  getEndpointDefaults(),
-  {
-    resolver: cb,
-  }
-));
-
-const getEndpointWithRootSelector = (cb) => createEndpoint(Object.assign(
-  {},
-  getEndpointDefaults(),
-  {
-    rootSelector: cb,
-  },
-));
+import { createEndpointWithDefaults } from './fixtures';
 
 describe('An endpoint selector', function() {
   it('returns the data at the resolved path when there is neither a rootSelector nor a resolver (twice)', function() {
-    const endpoint = getBasicEndpoint();
+    const endpoint = createEndpointWithDefaults();
     const { selector } = endpoint;
 
     const state = {
@@ -52,12 +23,14 @@ describe('An endpoint selector', function() {
       pendingRequests: 0,
     };
 
-    assert.deepEqual(selector(state.resourceApi, 1776), expected);
-    assert.deepEqual(selector(state.resourceApi, 1776), expected);
+    assert.deepEqual(selector(state.resourceApi), expected);
+    assert.deepEqual(selector(state.resourceApi), expected);
   });
 
   it('returns data at the resolved path for a complex resolver (twice)', function() {
-    const endpoint = getComplexResolverEndpoint((resourceType, id) => `${resourceType}__${id}`,)
+    const endpoint = createEndpointWithDefaults({
+      resolver: ({ resourceType, id }) => `${resourceType}__${id}`,
+    });
     const { selector } = endpoint;
 
     const expected = {
@@ -74,12 +47,14 @@ describe('An endpoint selector', function() {
       }
     };
 
-    assert.deepEqual(selector(state.resourceApi, 'books', 1), expected);
-    assert.deepEqual(selector(state.resourceApi, 'books', 1), expected);
+    assert.deepEqual(selector(state.resourceApi, { id: 1, resourceType: 'books' }), expected);
+    assert.deepEqual(selector(state.resourceApi, { id: 1, resourceType: 'books' }), expected);
   });
 
   it('returns data at the resolved path when a rootSelector is provided (twice)', () => {
-    const endpoint = getEndpointWithRootSelector(state => state.resources);
+    const endpoint = createEndpointWithDefaults({
+      rootSelector: state => state.resources,
+    });
     const { selector } = endpoint;
 
     const state = {
@@ -99,7 +74,7 @@ describe('An endpoint selector', function() {
   });
 
   it('returns null when there is no data at the resolved path', () => {
-    const endpoint = getBasicEndpoint();
+    const endpoint = createEndpointWithDefaults();
     const { selector } = endpoint;
 
     const state = {
@@ -111,7 +86,9 @@ describe('An endpoint selector', function() {
   });
 
   it('returns null when the rootSelector returns falsy', () => {
-    const endpoint = getEndpointWithRootSelector(state => state.test);
+    const endpoint = createEndpointWithDefaults({
+      rootSelector: state => state.test,
+    });
     const { selector } = endpoint;
 
     const state = {
