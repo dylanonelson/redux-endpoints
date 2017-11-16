@@ -13,7 +13,7 @@ describe('Endpoint middleware', () => {
       name: 'resource-api',
       request: () => Promise.resolve('some_test_data'),
     });
-    requestAction = endpoint.actionCreators.makeRequest(1776, { foo: 'bar' });
+    requestAction = endpoint.actionCreators.makeRequest({ id: 1776, foo: 'bar' });
     const getStore = configMockStore([endpoint.middleware]);
     store = getStore({});
   });
@@ -41,20 +41,8 @@ describe('Endpoint middleware', () => {
       setImmediate(() => {
         const actions = store.getActions();
         const ingestAction = actions[1];
+        console.log(requestAction.meta);
         assert.deepEqual(ingestAction.meta, requestAction.meta);
-        resolve();
-      });
-    });
-  });
-
-  test('passes the url property from the request action as a meta property on the ingest action', () => {
-    store.dispatch(requestAction);
-
-    return new Promise((resolve, reject) => {
-      setImmediate(() => {
-        const actions = store.getActions();
-        const ingestAction = actions[1];
-        assert.strictEqual(ingestAction.meta.url, requestAction.payload.url);
         resolve();
       });
     });

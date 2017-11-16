@@ -99,7 +99,7 @@ export const createEndpoint = ({
 
   ingestActionCreator.toString = () => ingestActionType;
 
-  const requestActionCreator = (params = {}, options = {}) => {
+  const requestActionCreator = (params = {}) => {
     let reqUrl = url;
 
     urlParamsSansColon.forEach(p => {
@@ -113,7 +113,6 @@ export const createEndpoint = ({
         url: reqUrl,
       },
       payload: {
-        options,
         url: reqUrl,
       },
       type: requestActionType,
@@ -131,10 +130,10 @@ export const createEndpoint = ({
 
   const middleware = store => next => action => {
     if (action.type === requestActionType) {
-      request(action.payload.url, action.payload.options)
-        .then(data =>
+      request(action.payload.url, action.meta.params)
+        .then(data => {
           store.dispatch(actionCreators.ingest(data, action.meta))
-        )
+        })
         .catch(error => {
           let payload;
 

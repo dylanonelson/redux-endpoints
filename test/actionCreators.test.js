@@ -14,7 +14,7 @@ describe('An endpoint request action creator', () => {
       resolver: ({ id }) => id,
     });
     requestActionCreator = endpoint.actionCreators.request;
-    requestAction = endpoint.actionCreators.request({ id: 1776 }, { foo: 'bar' });
+    requestAction = endpoint.actionCreators.request({ id: 1776, foo: 'bar' });
   });
 
   test('is a function', () => {
@@ -40,17 +40,8 @@ describe('An endpoint request action creator', () => {
       assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
     });
 
-    test('has a payload containing the options passed as the last parameter', () => {
-      assert.deepEqual(requestAction.payload.options, { foo: 'bar' });
-    });
-
-    test('defaults the options key of the payload to an empty object', () => {
-      requestAction = endpoint.actionCreators.request(1776);
-      assert.deepEqual(requestAction.payload.options, {});
-    });
-
-    test('has a meta property containing the named parameters', () => {
-      assert.deepEqual(requestAction.meta.params, { id: 1776 });
+    test('has a payload containing the \'params\' passed into the action creator', () => {
+      assert.deepEqual(requestAction.meta.params, { id: 1776, foo: 'bar' });
     });
 
     test('has a meta property containing a derived path', () => {
