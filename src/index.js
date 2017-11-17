@@ -1,7 +1,11 @@
-import URL from 'url-parse';
-
-import { DEFAULT_KEY } from './constants';
-import { camelCase, compose, initialEndpointState } from './utils';
+import {
+  camelCase,
+  compose,
+  defaultResolver,
+  defaultRootSelector,
+  defaultUrlBuilder,
+  initialEndpointState,
+} from './utils';
 
 export {
   dataSelector,
@@ -12,8 +16,6 @@ export {
 } from './selectors';
 
 export { initialEndpointState };
-
-const defaultResolver = () => DEFAULT_KEY;
 
 /**
  * @param {!Object} options
@@ -60,27 +62,18 @@ export const createEndpoint = ({
   request,
   url,
   resolver = defaultResolver,
-  rootSelector,
+  rootSelector = defaultRootSelector,
 }) => {
+  if ((typeof url === 'function' || typeof url === 'string') === false)
+    throw new Error(`url option for redux-endpoints must be either a string or a function`);
+
+  if (typeof name !== 'string')
+    throw new Error(`name option for redux-endpoints must be a string`);
+
+  if (typeof request !== 'function')
+    throw new Error('request option for redux endpoints must be a function');
+
   const camelCaseName = camelCase(name);
-
-  const parsedUrl = new URL(url);
-  // Thanks, Jeremy
-  const namedParam = /(\(\?)?:\w+/g;
-  const urlParams = [];
-  const urlParamsSansColon = [];
-
-  rootSelector = rootSelector || (state => state);
-
-  let match = true;
-
-  while (match) {
-    match = namedParam.exec(parsedUrl.pathname);
-    if (match) {
-      urlParamsSansColon.push(match[0].replace(/^:/, ''));
-      urlParams.push(match[0]);
-    }
-  }
 
   const ingestActionType =
     `${camelCaseName}/INGEST_RESPONSE`;
@@ -100,11 +93,13 @@ export const createEndpoint = ({
   ingestActionCreator.toString = () => ingestActionType;
 
   const requestActionCreator = (params = {}) => {
-    let reqUrl = url;
+    let reqUrl;
 
-    urlParamsSansColon.forEach(p => {
-      reqUrl = reqUrl.replace(`:${p}`, params[p]);
-    });
+    if (typeof url === 'function') {
+      reqUrl = url(params);
+    } else {
+      reqUrl = defaultUrlBuilder(params, url);
+    }
 
     return {
       meta: {

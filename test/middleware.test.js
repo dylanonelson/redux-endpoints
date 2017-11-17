@@ -41,7 +41,6 @@ describe('Endpoint middleware', () => {
       setImmediate(() => {
         const actions = store.getActions();
         const ingestAction = actions[1];
-        console.log(requestAction.meta);
         assert.deepEqual(ingestAction.meta, requestAction.meta);
         resolve();
       });

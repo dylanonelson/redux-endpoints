@@ -26,6 +26,23 @@ describe('An endpoint request action creator', () => {
     assert.strictEqual(requestActionCreator.toString(), expected);
   });
 
+  describe('when the url option is a string', () => {
+    test('constructs the url from the named parameters', () => {
+      assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
+    });
+  });
+
+  describe('when the url option is a function', () => {
+    test('constructs the url by passing the params into the function', () => {
+      const endpointWithUrlFunc = createEndpointWithDefaults({
+        url: ({ id }) => `http://localhost:1111/api/${id}`,
+        resolver: ({ name }) => name,
+      });
+      requestAction = endpointWithUrlFunc.actionCreators.makeRequest({ id: 1776 });
+      assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
+    });
+  });
+
   describe('returns an action object that', () => {
 
     test('is a plain object', () => {
@@ -34,10 +51,6 @@ describe('An endpoint request action creator', () => {
 
     test('has a type derived from its name property', () => {
       assert.strictEqual(requestAction.type, 'mockApi/MAKE_REQUEST');
-    });
-
-    test('has a payload containing the url', () => {
-      assert.deepEqual(requestAction.payload.url, 'http://localhost:1111/api/1776');
     });
 
     test('has a payload containing the \'params\' passed into the action creator', () => {
