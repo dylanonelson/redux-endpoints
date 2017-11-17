@@ -9,7 +9,7 @@ describe('An endpoint request action creator', () => {
 
   beforeEach(() => {
     endpoint = createEndpointWithDefaults({
-      name: 'mock-api',
+      name: 'mockApi',
       url: 'http://localhost:1111/api/:id',
       resolver: ({ id }) => id,
     });
@@ -69,7 +69,7 @@ describe('An endpoint ingest action creator', () => {
 
   beforeEach(() => {
     endpoint = createEndpointWithDefaults({
-      name: 'mock-api',
+      name: 'mockApi',
       url: 'http://localhost:1111/api/:id',
       resolver: ({ id }) => id,
     });

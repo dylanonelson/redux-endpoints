@@ -1,7 +1,7 @@
 import { createEndpoint } from '../context';
 
 const getEndpointDefaults = () => ({
-  name: 'resource-api',
+  name: 'resourceApi',
   request: url => (
     new Promise((resolve, reject) => {
       resolve('some_test_data');

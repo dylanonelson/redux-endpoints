@@ -1,5 +1,4 @@
 import {
-  camelCase,
   compose,
   defaultResolver,
   defaultRootSelector,
@@ -73,7 +72,7 @@ export const createEndpoint = ({
   if (typeof request !== 'function')
     throw new Error('request option for redux endpoints must be a function');
 
-  const camelCaseName = camelCase(name);
+  const camelCaseName = name;
 
   const ingestActionType =
     `${camelCaseName}/INGEST_RESPONSE`;

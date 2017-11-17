@@ -10,7 +10,7 @@ describe('Endpoint middleware', () => {
 
   beforeEach(() => {
     endpoint = createEndpointWithDefaults({
-      name: 'resource-api',
+      name: 'resourceApi',
       request: () => Promise.resolve('some_test_data'),
     });
     requestAction = endpoint.actionCreators.makeRequest({ id: 1776, foo: 'bar' });
