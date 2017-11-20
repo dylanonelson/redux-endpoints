@@ -2,6 +2,9 @@ import URL from 'url-parse';
 
 import { DEFAULT_KEY } from './constants';
 
+/**
+ * @returns {Object} endpointState
+ */
 export const initialEndpointState = () => ({
   data: null,
   error: null,

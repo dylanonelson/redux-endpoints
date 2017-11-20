@@ -18,43 +18,19 @@ export { initialEndpointState };
 
 /**
  * @param {!Object} options
- * @param {!string} options.name The name for this endpoint. Will be used to
- * derive the action names. Must be provided in spinal case. E.g. `my-api` will
- * be transformed to action name `myApi/MAKE_MY_API_REQUEST`.
- * @param {!function(url: string, options: Object)} options.request
- * Takes the url to be requested as well as an options object optionally
- * supplied to the `request` action creator. Must return a Promise object which
- * resolves with the successfully requested data and rejects with either a
- * string value or an Error object.
- * @param {!string} options.url
- * The url to be requested when store dispatches the `request` action. May
- * include any number of url parameters denoted by colons. E.g.
- * `'/myapi/content/:id'`.
+ * @param {!string} options.name
+ * @param {!function(url: string, options: Object)}
+ * @param {!string|function} options.url
  * @param {?function} options.resolver
- * Takes as its arguments the url parameters denoted in options.url with colors.
- * Takes as its last, optional argument an options object.
  * @param {?function} options.rootSelector
- * A selector that takes the state as its parameter and returns the root
- * location of the endpoint’s state. Defaults to `(state => state)`. The
- * `rootSelector` argument is called by the `selector` function to compute the
- * piece of state to select from.
  *
  * @return {Object} endpoint
  * @property {Object} actionCreators
  * @property {function} actionCreators.ingest
- * The ingest action creator is primarily for internal use, but it is exported
- * because its `toString` method returns its action type.
  * @property {function} actionCreators.request
- * Takes as its arguments the url parameters denoted in options.url with colons.
- * E.g. `'/myapi/content/:id'` results in a request action creator that takes
- * one argument, the `id` parameter. In addition, takes as its last, optional
- * argument an options object to pass in turn to the options.request function.
- * @property {function} selector Takes as its first argument the state. As its
- * remaining arguments it takes the same arguments as the passed resolver. If no
- * resolver is supplied, it receives no arguments. Returns the piece of state
- * for the url that the resolver arguments resolve to.
- * @property {function} reducer Redux reducer.
- * @property {function} middleware Redux middleware.
+ * @property {function} selector
+ * @property {function} reducer
+ * @property {function} middleware
  */
 export const createEndpoint = ({
   name,
@@ -74,11 +50,9 @@ export const createEndpoint = ({
 
   const camelCaseName = name;
 
-  const ingestActionType =
-    `${camelCaseName}/INGEST_RESPONSE`;
+  const ingestActionType = `${camelCaseName}/INGEST_RESPONSE`;
 
-  const requestActionType =
-    `${camelCaseName}/MAKE_REQUEST`;
+  const requestActionType = `${camelCaseName}/MAKE_REQUEST`;
 
   const ingestActionCreator = (payload, meta) => {
     return {
