@@ -53,6 +53,9 @@ export const defaultUrlBuilder = (params, urlString) => {
 /**
  * @private
  */
-export const compose = (...funcs) => data => (
-  funcs.reduceRight((v, f) => f(v), data)
-);
+export const compose = (...funcs) => (...args) => {
+  const firstFunc = funcs[funcs.length - 1];
+  const data = firstFunc(...args);
+  return funcs.slice(0, funcs.length - 1)
+    .reduceRight((value, f) => f(value), data);
+};

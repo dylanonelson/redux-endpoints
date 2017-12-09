@@ -6,13 +6,21 @@ import {
   initialEndpointState,
 } from './utils';
 
-export {
+import {
   dataSelector,
   errorSelector,
   isPendingSelector,
   successfulRequestsSelector,
   totalRequestsSelector,
 } from './selectors';
+
+export {
+  dataSelector,
+  errorSelector,
+  isPendingSelector,
+  successfulRequestsSelector,
+  totalRequestsSelector,
+};
 
 export { initialEndpointState };
 
@@ -189,10 +197,19 @@ export const createEndpoint = ({
     )(state);
   };
 
+  const selectors = {
+    dataSelector: compose(dataSelector, selector),
+    errorSelector: compose(errorSelector, selector),
+    isPendingSelector: compose(isPendingSelector, selector),
+    successfulRequestsSelector: compose(successfulRequestsSelector, selector),
+    totalRequestsSelector: compose(totalRequestsSelector, selector),
+  };
+
   return {
     actionCreators,
     middleware,
     reducer,
     selector,
+    selectors,
   };
 };
