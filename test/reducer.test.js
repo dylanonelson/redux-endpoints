@@ -50,7 +50,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].pendingRequests, 2);
     });
 
-    test('increments the totalRequests counter for the ingest action', function() {
+    test('increments the completedRequests counter for the ingest action', function() {
       const endpoint = createEndpointWithDefaults({
         resolver: (({ id }) => id),
       });
@@ -62,12 +62,12 @@ describe('An endpoint reducer', function() {
         '1776': {
           data: null,
           pendingRequests: 1,
-          totalRequests: 0,
+          completedRequests: 0,
         },
       };
 
       const result = reducer(previous, ingestAction);
-      assert.strictEqual(result['1776'].totalRequests, 1);
+      assert.strictEqual(result['1776'].completedRequests, 1);
     });
 
     test('increments the successfulRequests counter for a successful ingest action', function() {
@@ -83,7 +83,7 @@ describe('An endpoint reducer', function() {
           data: null,
           pendingRequests: 1,
           successfulRequests: 0,
-          totalRequests: 0,
+          completedRequests: 0,
         },
       };
 
@@ -134,7 +134,7 @@ describe('An endpoint reducer', function() {
       assert.strictEqual(result['1776'].error, null);
     });
 
-    test('increments the totalRequests counter but not the successfulRequests counter if the ingest action includes an error', function() {
+    test('increments the completedRequests counter but not the successfulRequests counter if the ingest action includes an error', function() {
       const endpoint = createEndpointWithDefaults({
         resolver: ({ id }) => id,
       });
@@ -149,7 +149,7 @@ describe('An endpoint reducer', function() {
           data,
           pendingRequests: 1,
           successfulRequests: 0,
-          totalRequests: 0,
+          completedRequests: 0,
         },
       };
 
@@ -164,7 +164,7 @@ describe('An endpoint reducer', function() {
       const state = result['1776'];
 
       assert.strictEqual(state.successfulRequests, 0);
-      assert.strictEqual(state.totalRequests, 1);
+      assert.strictEqual(state.completedRequests, 1);
     });
 
     test('leaves the data node untouched and parses the payload as an error if there was one', function() {

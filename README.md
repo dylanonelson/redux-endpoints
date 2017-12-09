@@ -85,7 +85,7 @@ At the end of the whole thing, your state will look as follows:
   resourceApi: {
     "1": {
       pendingRequests: 0,
-      totalRequests: 1,
+      completedRequests: 1,
       successfulRequests: 1,
       data: {
         id: 1,
@@ -102,7 +102,7 @@ If something went wrong with your request and the Promise were rejected, your st
   resourceApi: {
     "1": {
       pendingRequests: 0,
-      totalRequests: 1,
+      completedRequests: 1,
       successfulRequests: 0,
       data: null,
       error: {

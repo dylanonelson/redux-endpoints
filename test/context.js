@@ -10,7 +10,7 @@ export {
   dataSelector,
   errorSelector,
   isPendingSelector,
-  totalRequestsSelector,
+  completedRequestsSelector,
   successfulRequestsSelector,
 } from '../src';
 

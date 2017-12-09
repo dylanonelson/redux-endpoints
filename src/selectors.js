@@ -38,11 +38,11 @@ export const isPendingSelector = (state) => {
 
 /**
  * @param {Object} state A piece of state attached to one url.
- * @return {boolean} totalRequests How many requests, successful or unsuccessful, have been made to this url.
+ * @return {boolean} completedRequests How many requests, successful or unsuccessful, have been made to this url.
  */
-export const totalRequestsSelector = (state) => {
-  if (state && typeof state.totalRequests === 'number') {
-    return state.totalRequests;
+export const completedRequestsSelector = (state) => {
+  if (state && typeof state.completedRequests === 'number') {
+    return state.completedRequests;
   }
 
   return 0;
@@ -50,7 +50,7 @@ export const totalRequestsSelector = (state) => {
 
 /**
  * @param {Object} state A piece of state attached to one url.
- * @return {boolean} totalRequests How many successful requests have been made to this url. A successful request is a request whose Promise is not rejected.
+ * @return {boolean} completedRequests How many successful requests have been made to this url. A successful request is a request whose Promise is not rejected.
  */
 export const successfulRequestsSelector = (state) => {
   if (state && typeof state.successfulRequests === 'number') {

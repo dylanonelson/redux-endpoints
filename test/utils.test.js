@@ -17,7 +17,7 @@ describe('utils', () => {
         error: null,
         pendingRequests: 0,
         successfulRequests: 0,
-        totalRequests: 0,
+        completedRequests: 0,
       };
       assert.deepEqual(state, expected);
     });

@@ -11,7 +11,7 @@ import {
   errorSelector,
   isPendingSelector,
   successfulRequestsSelector,
-  totalRequestsSelector,
+  completedRequestsSelector,
 } from './selectors';
 
 export {
@@ -19,7 +19,7 @@ export {
   errorSelector,
   isPendingSelector,
   successfulRequestsSelector,
-  totalRequestsSelector,
+  completedRequestsSelector,
 };
 
 export { initialEndpointState };
@@ -164,10 +164,10 @@ export const createEndpoint = ({
         );
       }
 
-      nextPathState.totalRequests = (
-        nextPathState.totalRequests === undefined
+      nextPathState.completedRequests = (
+        nextPathState.completedRequests === undefined
         ? 1
-        : nextPathState.totalRequests + 1
+        : nextPathState.completedRequests + 1
       );
       nextPathState.pendingRequests--;
     }
@@ -198,11 +198,11 @@ export const createEndpoint = ({
   };
 
   const selectors = {
+    completedRequestsSelector: compose(completedRequestsSelector, selector),
     dataSelector: compose(dataSelector, selector),
     errorSelector: compose(errorSelector, selector),
     isPendingSelector: compose(isPendingSelector, selector),
     successfulRequestsSelector: compose(successfulRequestsSelector, selector),
-    totalRequestsSelector: compose(totalRequestsSelector, selector),
   };
 
   return {

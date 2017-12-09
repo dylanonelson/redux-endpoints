@@ -8,7 +8,7 @@ import {
   dataSelector,
   errorSelector,
   isPendingSelector,
-  totalRequestsSelector,
+  completedRequestsSelector,
   successfulRequestsSelector,
 } from './context';
 
@@ -34,9 +34,9 @@ function getStateWithNullData() {
   return null;
 };
 
-function getStateWithTotalRequests(num = 1) {
+function getStateWithCompletedRequests(num = 1) {
   const initial = initialEndpointState();
-  initial.totalRequests = num;
+  initial.completedRequests = num;
   return initial;
 };
 
@@ -90,15 +90,15 @@ describe('Selectors', function () {
     assert.strictEqual(result, false);
   });
 
-  it('totalRequestsSelector returns the number of total requests', () => {
-    const state = getStateWithTotalRequests(3);
-    const result = totalRequestsSelector(state);
+  it('completedRequestsSelector returns the number of total requests', () => {
+    const state = getStateWithCompletedRequests(3);
+    const result = completedRequestsSelector(state);
     expect(result).toBe(3);
   });
 
-  it('totalRequestsSelector returns 0 if the state is invalid', () => {
+  it('completedRequestsSelector returns 0 if the state is invalid', () => {
     const state = getStateWithNullData();
-    const result = totalRequestsSelector(state);
+    const result = completedRequestsSelector(state);
     expect(result).toBe(0);
   });
 

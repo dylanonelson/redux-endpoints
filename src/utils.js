@@ -6,11 +6,11 @@ import { DEFAULT_KEY } from './constants';
  * @returns {Object} endpointState
  */
 export const initialEndpointState = () => ({
+  completedRequests: 0,
   data: null,
   error: null,
   pendingRequests: 0,
   successfulRequests: 0,
-  totalRequests: 0,
 });
 
 /**
