@@ -3,8 +3,6 @@
 
 ![Build status](https://travis-ci.org/dylanonelson/redux-endpoints.svg?branch=master)
 
-## NOTE: version `0.11.0` changes the parameters of the expected `request`, `resolver`, and `selector` functions and the format of the `name` option.
-
 ## Motivation
 I found myself writing a lot of boilerplate code every time I wanted to fetch data and ingest it into my Redux store. First, I would define some actions for requesting and ingesting the data. Then I would define a reducer to process those actions. Then I would define some middleware or a saga to intercept the "request" action and fire off the "ingest" one once the API call was complete. Establishing all the cross references and integrating the module into my Redux setup was tedious and error prone. More importantly, I quickly realized that for simple cases I was doing the exact same thing every time, with minor variations caused only by slips of memory or spells of laziness. I made redux-endpoints as a way to standardize this type of module definition.
 
@@ -174,3 +172,27 @@ A selector for retrieving request data. Its first argument is the state. Its sec
 // Retrieve endpoint data for url /api/resource/1000
 const endpointData = selector(state, { id: 1000 });
 ```
+
+### `endpoint.selectors`
+
+Selectors for working with request data.
+
+#### `endpoint.selectors.completedRequestsSelector`
+Takes the same arguments as `endpoint.selector`. Returns the number of completed (either successful or failed) requests.
+
+```javascript
+// Retrieve the number of completed requests to url /api/resources/1000
+const numCompletedRequests = endpoint.selectors.completedRequestsSelector(staet, { id: 1000 });
+```
+
+#### `endpoint.selectors.dataSelector`
+Takes the same arguments as `endpoint.selector`. Returns the data returned by the last successful request (or null).
+
+#### `endpoint.selectors.errorSelector`
+Takes the same arguments as `endpoint.selector`. Returns the error thrown by the last failed request (or null).
+
+#### `endpoint.selectors.isPendingSelector`
+Takes the same arguments as `endpoint.selector`. Returns `true` if there is a request (or multiple requests) pending. Otherwise, returns `false`.
+
+#### `endpoint.selectors.successfulRequestsSelector`
+Takes the same arguments as `endpoint.selector`. Returns the number of successful requests.

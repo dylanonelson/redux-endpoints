@@ -37,6 +37,12 @@ export { initialEndpointState };
  * @property {function} actionCreators.ingest
  * @property {function} actionCreators.request
  * @property {function} selector
+ * @property {Object} selectors
+ * @property {function} selectors.completedRequestsSelector
+ * @property {function} selectors.dataSelector
+ * @property {function} selectors.errorSelector
+ * @property {function} selectors.isPendingSelector
+ * @property {function} selectors.successfulRequestsSelector
  * @property {function} reducer
  * @property {function} middleware
  */
