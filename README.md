@@ -189,7 +189,7 @@ const numCompletedRequests = endpoint.selectors.completedRequestsSelector(staet,
 Takes the same arguments as `endpoint.selector`. Returns the data returned by the last successful request (or null).
 
 #### `endpoint.selectors.errorSelector`
-Takes the same arguments as `endpoint.selector`. Returns the error thrown by the last failed request (or null).
+Takes the same arguments as `endpoint.selector`. Returns the error thrown by the last request, if it failed. Otherwise, returns null.
 
 #### `endpoint.selectors.isPendingSelector`
 Takes the same arguments as `endpoint.selector`. Returns `true` if there is a request (or multiple requests) pending. Otherwise, returns `false`.
