@@ -7,19 +7,25 @@ import {
 } from './utils';
 
 import {
+  completedRequestsSelector,
   dataSelector,
   errorSelector,
+  hasBeenRequestedSelector,
+  hasCompletedOnceSelector,
   isPendingSelector,
+  pendingRequestsSelector,
   successfulRequestsSelector,
-  completedRequestsSelector,
 } from './selectors';
 
 export {
+  completedRequestsSelector,
   dataSelector,
   errorSelector,
+  hasBeenRequestedSelector,
+  hasCompletedOnceSelector,
   isPendingSelector,
+  pendingRequestsSelector,
   successfulRequestsSelector,
-  completedRequestsSelector,
 };
 
 export { initialEndpointState };
@@ -207,7 +213,10 @@ export const createEndpoint = ({
     completedRequestsSelector: compose(completedRequestsSelector, selector),
     dataSelector: compose(dataSelector, selector),
     errorSelector: compose(errorSelector, selector),
+    hasBeenRequestedSelector: compose(hasBeenRequestedSelector, selector),
+    hasCompletedOnceSelector: compose(hasCompletedOnceSelector, selector),
     isPendingSelector: compose(isPendingSelector, selector),
+    pendingRequestsSelector: compose(pendingRequestsSelector, selector),
     successfulRequestsSelector: compose(successfulRequestsSelector, selector),
   };
 

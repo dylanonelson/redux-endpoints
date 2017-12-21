@@ -7,10 +7,13 @@ import * as utils from '../src/utils';
 import * as constants from '../src/constants';
 
 export {
+  completedRequestsSelector,
   dataSelector,
   errorSelector,
+  hasBeenRequestedSelector,
+  hasCompletedOnceSelector,
   isPendingSelector,
-  completedRequestsSelector,
+  pendingRequestsSelector,
   successfulRequestsSelector,
 } from '../src';
 

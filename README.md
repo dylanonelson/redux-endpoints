@@ -196,3 +196,12 @@ Takes the same arguments as `endpoint.selector`. Returns `true` if there is a re
 
 #### `endpoint.selectors.successfulRequestsSelector`
 Takes the same arguments as `endpoint.selector`. Returns the number of successful requests.
+
+#### `endpoint.selectors.hasBeenRequestedSelector`
+Takes the same arguments as `endpoint.selector`. Returns `true` if any request has been initiated or completed to this url.
+
+#### `endpoint.selectors.hasBeenCompletedOnceSelector`
+Takes the same arguments as `endpoint.selector`. Returns `true` if any request, whether failed or successful, has been completed o this url.
+
+#### `endpoint.selectors.pendingRequestsSelector`
+Takes the same arguments as `endpoint.selector`. Returns the number of requests currently pending to this url.

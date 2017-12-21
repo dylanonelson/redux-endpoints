@@ -5,22 +5,28 @@ import { utils } from './context';
 const { initialEndpointState } = utils;
 
 import {
+  completedRequestsSelector,
   dataSelector,
   errorSelector,
+  hasBeenRequestedSelector,
+  hasCompletedOnceSelector,
   isPendingSelector,
-  completedRequestsSelector,
+  pendingRequestsSelector,
   successfulRequestsSelector,
 } from './context';
 
 function getStateWithSuccessfulResponse(response) {
   const initial = initialEndpointState();
   initial.data = response;
+  initial.completedRequests = 1;
+  initial.successfulRequests = 1;
   return initial;
 };
 
 function getStateWithError(error) {
   const initial = initialEndpointState();
   initial.error = error;
+  initial.completedRequests = 1;
   return initial;
 };
 
@@ -40,9 +46,11 @@ function getStateWithCompletedRequests(num = 1) {
   return initial;
 };
 
-function getStateWithSuccessfulRequests(num = 1) {
+function getStateWithSuccessfulRequests(num = 1, data = { one: 1 }) {
   const initial = initialEndpointState();
   initial.successfulRequests = num;
+  initial.completedRequests = num;
+  initial.data = data;
   return initial;
 };
 
@@ -111,6 +119,56 @@ describe('Selectors', function () {
   it('successfulRequestsSelector returns 0 if the state is invalid', () => {
     const state = getStateWithNullData();
     const result = successfulRequestsSelector(state);
+    expect(result).toBe(0);
+  });
+
+  it('hasBeenRequestedSelector returns true if any request has been initiated or completed', () => {
+    let state = getStateWithSuccessfulRequests(3);
+    let result = hasBeenRequestedSelector(state);
+    expect(result).toBe(true);
+
+    state = getStateWithPendingRequests(1);
+    result = hasBeenRequestedSelector(state);
+    expect(result).toBe(true);
+  });
+
+  it('hasBeenRequestedSelector returns false if the state is invalid', () => {
+    const state = getStateWithNullData();
+    const result = hasBeenRequestedSelector(state);
+    expect(result).toBe(false);
+  });
+
+  it('hasCompletedOnceSelector returns true if any request has completed', () => {
+    let state = getStateWithSuccessfulRequests(3);
+    let result = hasCompletedOnceSelector(state);
+    expect(result).toBe(true);
+
+    state = getStateWithError(new Error('Uh oh'));
+    result = hasCompletedOnceSelector(state);
+    expect(result).toBe(true);
+  });
+
+  it('hasCompletedOnceSelector returns false if no requests have completed', () => {
+    const state = initialEndpointState();
+    const result = hasCompletedOnceSelector(state);
+    expect(result).toBe(false);
+  });
+
+  it('hasCompletedOnceSelector returns false if the state is invalid', () => {
+    const state = getStateWithNullData();
+    const result = hasCompletedOnceSelector(state);
+    expect(result).toBe(false);
+  });
+
+  it('pendingRequestsSelector returns the number of pending requests', () => {
+    let state = getStateWithPendingRequests(3);
+    let result = pendingRequestsSelector(state);
+    expect(result).toBe(3);
+  });
+
+  it('pendingRequestsSelector returns 0 if the state is invalid', () => {
+    const state = getStateWithNullData();
+    const result = pendingRequestsSelector(state);
     expect(result).toBe(0);
   });
 });
