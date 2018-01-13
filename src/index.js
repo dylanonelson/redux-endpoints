@@ -116,23 +116,34 @@ export const createEndpoint = ({
     request: requestActionCreator,
   };
 
+  let queue = [];
+
   const middleware = store => next => action => {
-    if (action.type === requestActionType) {
-      request(action.payload.url, action.meta.params)
-        .then(data => {
-          store.dispatch(actionCreators.ingest(data, action.meta))
-        })
-        .catch(error => {
-          let payload;
+    if (action.type === requestActionType && queue.includes(action) === false) {
+      return new Promise((resolve, reject) => {
+        queue.push(action);
+        store.dispatch(action);
+        resolve(action);
+      }).then(requestAction => {
+        queue = queue.filter(queued => queued !== requestAction);
+        return request(requestAction.payload.url, requestAction.meta.params)
+      })
+      .then(data => {
+        const ingestAction = actionCreators.ingest(data, action.meta);
+        store.dispatch(ingestAction);
+        return ingestAction;
+      })
+      .catch(error => {
+        let payload;
 
-          if (error instanceof Error) {
-            payload = error;
-          } else {
-            payload = new Error(error);
-          }
+        if (error instanceof Error) {
+          payload = error;
+        } else {
+          payload = new Error(error);
+        }
 
-          store.dispatch(actionCreators.ingest(payload, action.meta))
-        });
+        store.dispatch(actionCreators.ingest(payload, action.meta))
+      });
     }
     return next(action);
   }

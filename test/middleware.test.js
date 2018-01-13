@@ -47,6 +47,15 @@ describe('Endpoint middleware', () => {
     });
   });
 
+  test('returns a promise which is resolved with the ingest action', () => {
+    const promise = store.dispatch(requestAction);
+    assert.instanceOf(promise, Promise);
+
+    return promise.then(ingestAction => {
+      assert.deepEqual(ingestAction.payload, 'some_test_data');
+    });
+  });
+
   test('catches promises rejected with an error and creates an error ingest action', () => {
     endpoint = createEndpointWithDefaults({
       request: () => new Promise((resolve, reject) => reject(new Error('test'))),
