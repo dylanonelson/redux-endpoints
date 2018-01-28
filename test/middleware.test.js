@@ -1,7 +1,10 @@
 import { assert } from 'chai';
 import configMockStore from 'redux-mock-store';
 
-import { createEndpointWithDefaults, getRequestAndIngestActions } from './fixtures';
+import {
+  createEndpointWithDefaults,
+  getRequestAndIngestActions,
+} from './fixtures';
 import { createEndpoint } from './context';
 
 describe('Endpoint middleware', () => {
@@ -53,6 +56,28 @@ describe('Endpoint middleware', () => {
 
     return promise.then(ingestAction => {
       assert.deepEqual(ingestAction.payload, 'some_test_data');
+    });
+  });
+
+  test('returns a promise which is resolved with the error ingest action', () => {
+    const error = new Error('test');
+
+    endpoint = createEndpointWithDefaults({
+      request: () => Promise.reject(error),
+    });
+
+    requestAction = endpoint.actionCreators.makeRequest({});
+
+    const getStore = configMockStore([endpoint.middleware]);
+
+    store = getStore({});
+
+    const promise = store.dispatch(requestAction);
+
+    assert.instanceOf(promise, Promise);
+
+    return promise.then(ingestAction => {
+      assert.strictEqual(ingestAction.payload, error);
     });
   });
 

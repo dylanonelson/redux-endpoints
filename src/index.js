@@ -142,7 +142,11 @@ export const createEndpoint = ({
           payload = new Error(error);
         }
 
-        store.dispatch(actionCreators.ingest(payload, action.meta))
+        const ingestAction = actionCreators.ingest(payload, action.meta);
+
+        store.dispatch(ingestAction);
+
+        return ingestAction;
       });
     }
     return next(action);
